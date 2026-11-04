@@ -61,3 +61,22 @@ body {
   --color-pp-danger: var(--pp-danger);
   --font-paypal: var(--pp-font);
 }
+
+/* Harbor Lane Animal Rescue, the demo nonprofit: its donor-facing pages (app/donate). */
+:root {
+  --hl-cream: #fbf7f0;
+  --hl-teal: #0f766e;
+  --hl-teal-dark: #115e59;
+  --hl-ink: #1f2933;
+  --hl-muted: #52606d;
+  --hl-border: #e4dccf;
+}
+
+@theme inline {
+  --color-hl-cream: var(--hl-cream);
+  --color-hl-teal: var(--hl-teal);
+  --color-hl-teal-dark: var(--hl-teal-dark);
+  --color-hl-ink: var(--hl-ink);
+  --color-hl-muted: var(--hl-muted);
+  --color-hl-border: var(--hl-border);
+}

@@ -41,26 +41,41 @@ async function accessToken(): Promise<string> {
   return access_token;
 }
 
-async function get<T>(path: string): Promise<T> {
+async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(`${BASE_URL}${path}`, {
-      headers: { Authorization: `Bearer ${await accessToken()}` },
+      method,
+      headers: {
+        Authorization: `Bearer ${await accessToken()}`,
+        ...(body !== undefined && { 'Content-Type': 'application/json', Prefer: 'return=representation' }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',
     });
-    if (res.ok) return (await res.json()) as T;
+    if (res.ok) {
+      const text = await res.text();
+      return (text ? JSON.parse(text) : {}) as T;
+    }
 
     // A revoked or expired token: drop it and mint a new one once.
     if (res.status === 401 && attempt === 1) {
       cachedToken = undefined;
       continue;
     }
-    if ((res.status === 429 || res.status >= 500) && attempt < MAX_ATTEMPTS) {
+    // A POST that failed with a 5xx may still have gone through, so only reads retry those.
+    const retriable = res.status === 429 || (method === 'GET' && res.status >= 500);
+    if (retriable && attempt < MAX_ATTEMPTS) {
       await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 250));
       continue;
     }
     throw new PayPalApiError(res.status, path, await res.text());
   }
 }
+
+const get = <T>(path: string) => request<T>('GET', path);
+
+/** A POST to the PayPal REST API, for the write calls the PayPal Server SDK doesn't cover (Invoicing). */
+export const post = <T>(path: string, body: unknown) => request<T>('POST', path, body);
 
 // `path` must already carry whatever flag makes the endpoint report `total_pages`.
 async function listAll<T>(path: string, key: string, pageSize: number): Promise<T[]> {
