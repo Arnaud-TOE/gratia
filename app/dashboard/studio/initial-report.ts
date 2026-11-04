@@ -49,9 +49,10 @@ const revenue: AgPageState = {
     'invoice-date': {
       type: 'date-filter',
       dataMapping: { value: [{ id: 'invoices.invoiceDate' }] },
-      // No default period: a relative date filter in saved state fails to apply on load in
-      // Studio 3.0 ("must be a two-element range"), though it works once picked in the widget.
-      format: { style: { filterType: 'relative' } },
+      // A from-to range, empty until someone picks dates. (A relative "last N months" default
+      // fails to apply on load in Studio 3.0 with "must be a two-element range", and unset it
+      // reads as "Last 3 Select".)
+      format: { style: { filterType: 'between' } },
     },
     'kpi-invoiced': kpi(
       'Committed',

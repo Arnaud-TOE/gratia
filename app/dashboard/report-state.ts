@@ -13,11 +13,12 @@ const durable = (state: AgReportState) =>
     pages: state.pages.map(({ id, widgets, widgetLayout, layout, filter }) => ({ id, widgets, widgetLayout, layout, filter })),
   });
 
-// The filters panel starts expanded in view mode, where it's the only panel, and collapsed in
-// edit mode, where Compose and Data need the room. Panel state isn't something Save compares.
-export const withFiltersPanelFor = (mode: AgStudioMode, state: AgReportState): AgReportState => ({
+// The filters panel starts collapsed in both modes: the reports filter through their own widgets
+// (date, currency), so the room goes to the charts in view mode and to Compose and Data in edit
+// mode. It is one click away on the right edge. Panel state isn't something Save compares.
+export const withFiltersPanelFor = (_mode: AgStudioMode, state: AgReportState): AgReportState => ({
   ...state,
-  panels: { ...state.panels, filters: { ...state.panels?.filters, collapsed: mode === 'edit' } },
+  panels: { ...state.panels, filters: { ...state.panels?.filters, collapsed: true } },
 });
 
 // Studio leaves page navigation to the host: these add, remove and select pages in state.

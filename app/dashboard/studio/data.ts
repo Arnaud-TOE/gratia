@@ -15,11 +15,22 @@ import type { GratiaRegistry } from './widgets';
 
 const CALENDAR_ID = 'calendar';
 
-// [id, name, format, hide?]
-type FieldSpec = [id: string, name: string, format: AgFormat, hide?: boolean];
+// [id, name, format, hide?]. Money is in US dollars: 'currencyFormat' shows whole dollars, as gifts
+// and pledges are; 'cents' is for fees, taxes and ledger lines, where the cents matter.
+type FieldSpec = [id: string, name: string, format: AgFormat | 'cents', hide?: boolean];
+
+const DOLLARS = { format: '$#,##0' };
+const CENTS = { format: '$#,##0.00' };
 
 const fields = (specs: FieldSpec[]): AgFieldDefinition[] =>
-  specs.map(([id, name, format, hide]) => ({ id, name, format, ...(hide && { hide }) }));
+  specs.map(([id, name, format, hide]) => ({
+    id,
+    name,
+    ...(format === 'cents'
+      ? { format: 'currencyFormat', formatOptions: CENTS }
+      : { format, ...(format === 'currencyFormat' && { formatOptions: DOLLARS }) }),
+    ...(hide && { hide }),
+  }));
 
 // Foreign key 'table.field' -> primary key 'table.field'.
 const manyToOne = (id: string, source: string, target: string): AgRelationDefinition => {
@@ -116,7 +127,7 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
           ['daysOverdue', 'Days Overdue', 'integerFormat'],
           ['agingBucket', 'Aging Bucket', 'textFormat'],
           ['daysToPay', 'Days to Pay', 'integerFormat'],
-          ['taxTotal', 'Tax', 'currencyFormat'],
+          ['taxTotal', 'Tax', 'cents'],
         ]),
       },
       {
@@ -132,8 +143,8 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
           ['quantity', 'Quantity', 'decimalFormat'],
           ['unitPrice', 'Unit Price', 'currencyFormat'],
           ['gross', 'Gross', 'currencyFormat'],
-          ['discount', 'Line Discount', 'currencyFormat'],
-          ['tax', 'Line Tax', 'currencyFormat'],
+          ['discount', 'Line Discount', 'cents'],
+          ['tax', 'Line Tax', 'cents'],
           ['lineTotal', 'Line Total', 'currencyFormat'],
         ]),
       },
@@ -193,10 +204,10 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
           ['status', 'Transaction Status', 'textFormat'],
           ['direction', 'Direction', 'textFormat'],
           ['currency', 'Transaction Currency', 'textFormat', true],
-          ['amount', 'Transaction Amount', 'currencyFormat'],
-          ['fee', 'Transaction Fee', 'currencyFormat'],
-          ['net', 'Transaction Net', 'currencyFormat'],
-          ['endingBalance', 'Ending Balance', 'currencyFormat'],
+          ['amount', 'Transaction Amount', 'cents'],
+          ['fee', 'Transaction Fee', 'cents'],
+          ['net', 'Transaction Net', 'cents'],
+          ['endingBalance', 'Ending Balance', 'cents'],
           ['counterparty', 'Counterparty', 'textFormat'],
           ['note', 'Transaction Note', 'textFormat'],
         ]),
@@ -212,7 +223,7 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
           ['date', 'Payout Date', 'dateTimeFormat'],
           ['status', 'Payout Status', 'textFormat'],
           ['amount', 'Payout Amount', 'currencyFormat'],
-          ['fee', 'Payout Fee', 'currencyFormat'],
+          ['fee', 'Payout Fee', 'cents'],
           ['note', 'Payout Note', 'textFormat'],
         ]),
       },
@@ -222,9 +233,9 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
         data: data.balances,
         fields: fields([
           ['currency', 'Balance Currency', 'textFormat'],
-          ['total', 'Total Balance', 'currencyFormat'],
-          ['available', 'Available Balance', 'currencyFormat'],
-          ['withheld', 'Withheld Balance', 'currencyFormat'],
+          ['total', 'Total Balance', 'cents'],
+          ['available', 'Available Balance', 'cents'],
+          ['withheld', 'Withheld Balance', 'cents'],
         ]),
       },
     ],
