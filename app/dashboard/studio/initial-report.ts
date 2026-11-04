@@ -137,6 +137,17 @@ const revenue: AgPageState = {
         },
       },
     },
+    // Our custom widget (./widgets/donor-wall). Studio's state types list only the built-in
+    // widget types, so it is cast in; Studio itself resolves it from the registered widgets.
+    'donor-wall': {
+      type: 'donor-wall',
+      dataMapping: {
+        donor: [{ id: 'customers.name' }],
+        amount: [sum('invoicePayments.signedAmount')],
+        gifts: [countd('invoicePayments.id')],
+      },
+      format: title('Donor wall: thank you!'),
+    } as unknown as NonNullable<NonNullable<AgPageState['widgets']>[string]>,
     'invoice-status-pivot': {
       type: 'pivot-grid',
       dataMapping: {
@@ -164,7 +175,8 @@ const revenue: AgPageState = {
     'status-sunburst': at(0, 23, 8, 18),
     'items-treemap': at(8, 23, 8, 18),
     'payment-methods': at(16, 23, 8, 18),
-    'invoice-status-pivot': at(0, 41, 24, 20),
+    'donor-wall': at(0, 41, 8, 24),
+    'invoice-status-pivot': at(8, 41, 16, 24),
   },
 };
 

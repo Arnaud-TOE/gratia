@@ -49,6 +49,7 @@ import * as reportState from './report-state';
 import { buildAi } from './studio/ai';
 import { buildStudioData, hasData } from './studio/data';
 import { agStudioPayPalTheme } from './studio/theme';
+import { gratiaWidgets, type GratiaRegistry } from './studio/widgets';
 import { useReports } from './use-reports';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -264,9 +265,10 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
       <div className="min-h-0 flex-1">
         {hasData(data) ? (
           <AgStudioProvider licenseKey={licenseKey} modules={ai ? [AgStudioAiModule] : undefined}>
-            <AgStudio
+            <AgStudio<GratiaRegistry>
               style={{ height: '100%', width: '100%' }}
               theme={agStudioPayPalTheme}
+              widgets={gratiaWidgets}
               layout={{ widgetBorderEnabled: true }}
               data={studioData}
               ai={ai}

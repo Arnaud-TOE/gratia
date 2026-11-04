@@ -9,6 +9,7 @@ import type {
   AgRelationDefinition,
 } from 'ag-studio';
 import type { DashboardData } from '@/lib/dashboard-data';
+import type { GratiaRegistry } from './widgets';
 
 // --- Helpers ----------------------------------------------------------------------
 
@@ -57,7 +58,7 @@ const ratio = (id: string, name: string, description: string, numerator: string,
 export const hasData = (data: DashboardData) =>
   [data.invoices, data.transactions, data.products, data.plans, data.balances].some((rows) => rows.length > 0);
 
-export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
+export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<GratiaRegistry> {
   const dates = [
     ...data.invoices.map((r) => r.invoiceDate),
     ...data.invoicePayments.map((r) => r.date),
