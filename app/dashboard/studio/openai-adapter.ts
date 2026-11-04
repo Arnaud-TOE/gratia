@@ -509,9 +509,13 @@ class ResponseStreamTranslator {
             case 'response.incomplete':
                 outcome.error ??= new Error(input.response?.error?.message ?? `Response ${input.type}.`);
                 return [];
-            case 'error':
-                outcome.error ??= new Error(`${input.code ?? 'api_error'}: ${input.message}`);
+            case 'error': {
+                // The Responses API nests the details under `error` (e.g. insufficient_quota when the
+                // account has no credit); older payloads put them at the top level.
+                const { code, message } = input.error ?? input;
+                outcome.error ??= new Error(`${code ?? 'api_error'}: ${message ?? 'the model request failed'}`);
                 return [];
+            }
             default:
                 return [];
         }

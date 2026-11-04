@@ -191,6 +191,10 @@ export type Invoice = {
   };
 };
 
+export function getInvoice(id: string): Promise<Invoice> {
+  return get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(id)}`);
+}
+
 // The list omits line items, payments and refunds; the detail endpoint has them.
 export async function listInvoices(): Promise<Invoice[]> {
   const summaries = await listAll<{ id: string }>('/v2/invoicing/invoices?total_required=true', 'items', 100);

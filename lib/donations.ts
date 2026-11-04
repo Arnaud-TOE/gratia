@@ -4,10 +4,11 @@
 // donor's giving history next to their pledges.
 
 import { CheckoutPaymentIntent, OrderStatus } from '@paypal/paypal-server-sdk';
+import { ORGANIZATION } from './organization';
 import { post } from './paypal';
 import { ordersApi } from './paypal-sdk';
 
-export const ORGANIZATION = 'Harbor Lane Animal Rescue';
+export { ORGANIZATION };
 
 export const CAMPAIGNS = ['Winter Shelter Drive', 'Medical Fund', 'Sponsor a Pet', 'Community Spay & Neuter'] as const;
 export type Campaign = (typeof CAMPAIGNS)[number];

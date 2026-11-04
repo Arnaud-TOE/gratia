@@ -20,6 +20,7 @@ import {
 } from 'ag-studio';
 import { AgStudio, AgStudioProvider } from 'ag-studio-react';
 import type { DashboardData } from '@/lib/dashboard-data';
+import { useApprovals } from './components/approval-dialog';
 import { AppShell } from './components/app-shell';
 import {
   CreateReportDialog,
@@ -96,8 +97,13 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
   const [initialState] = useState(() => reportState.withFiltersPanelFor('view', saved.state));
   const state = studioState ?? initialState;
   const studioData = useMemo(() => buildStudioData(data), [data]);
+  // The agent asks here before PayPal sends anything on the rescue's behalf.
+  const { requestApproval, approvalDialog } = useApprovals();
   // `ai` is read once, when Studio is created.
-  const ai = useMemo(() => (aiModels?.length ? buildAi(aiModels) : undefined), [aiModels]);
+  const ai = useMemo(
+    () => (aiModels?.length ? buildAi(aiModels, data, requestApproval) : undefined),
+    [aiModels, data, requestApproval],
+  );
 
   // --- Driving Studio ---------------------------------------------------------------
   const load = (
@@ -327,6 +333,7 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
           setDialog(null);
         }}
       />
+      {approvalDialog}
     </AppShell>
   );
 }
