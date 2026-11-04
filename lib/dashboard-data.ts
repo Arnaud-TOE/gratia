@@ -276,13 +276,24 @@ function balanceRows({ balances = [] }: Balances) {
 // --- Snapshot -----------------------------------------------------------------------
 
 const TRANSACTION_WINDOW_MS = TRANSACTION_SEARCH_MAX_DAYS * DAY_MS;
+// Transaction Search answers at most 31 days per call, so the ledger is read in three windows:
+// about a quarter, enough to keep this autumn's donations on the dashboard through December.
+const TRANSACTION_WINDOWS = 3;
+
+async function recentTransactions(asOf: Date): Promise<Transaction[]> {
+  const windows = Array.from({ length: TRANSACTION_WINDOWS }, (_, i) => {
+    const end = new Date(asOf.getTime() - i * TRANSACTION_WINDOW_MS);
+    return searchTransactions(new Date(end.getTime() - TRANSACTION_WINDOW_MS), end);
+  });
+  return (await Promise.all(windows)).flat();
+}
 
 export async function getDashboardData(asOf = new Date()) {
   const [products, plans, invoices, transactions, balances] = await Promise.all([
     listProducts(),
     listPlans(),
     listInvoices(),
-    searchTransactions(new Date(asOf.getTime() - TRANSACTION_WINDOW_MS), asOf),
+    recentTransactions(asOf),
     getBalances(),
   ]);
   const today = asOf.toISOString().slice(0, 10);

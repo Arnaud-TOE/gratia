@@ -210,6 +210,7 @@ export function ReportsSidebar({
             Reset demo
           </button>
         </p>
+        <p className="mt-2 text-center text-[11px] text-pp-muted">Dashboards by AG Studio · Payments by PayPal</p>
       </div>
     </>
   );

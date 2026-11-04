@@ -1,4 +1,4 @@
-// The built-in "PayPal overview" report: pages for revenue, receivables, cash and catalogue, as
+// The built-in "Giving overview" report: pages for giving, pledges, cash and programs, as
 // AG Studio report state. Field ids ('invoices.paidAmount') refer to the data sources in ./data.ts.
 
 import type { AgPageState, AgReportState, AgWidgetLayoutState } from 'ag-studio';
@@ -54,12 +54,12 @@ const revenue: AgPageState = {
       format: { style: { filterType: 'relative' } },
     },
     'kpi-invoiced': kpi(
-      'Invoiced',
+      'Committed',
       sum('invoices.issuedAmount'),
       'calendar::month',
     ),
     'kpi-collected': kpi(
-      'Collected',
+      'Received',
       sum('invoices.paidAmount'),
       'calendar::month',
     ),
@@ -81,7 +81,7 @@ const revenue: AgPageState = {
         secondaryValueKey: [{ id: 'collectionRate' }],
       },
       format: {
-        ...title('Invoiced and paid by invoice month, with collection rate'),
+        ...title('Committed and received by month, with collection rate'),
         style: { theme: { common: { legend: { enabled: true } } } },
       },
     },
@@ -95,7 +95,7 @@ const revenue: AgPageState = {
           label: { typography: typography(24, 'bold') },
           secondaryLabel: {
             enabled: true,
-            text: 'of invoiced value paid',
+            text: 'of committed gifts received',
             typography: typography(12),
           },
         },
@@ -110,15 +110,15 @@ const revenue: AgPageState = {
         ],
         valueKey: [sum('invoices.total')],
       },
-      format: title('Invoice value by status and customer'),
+      format: title('Gifts and pledges by status and donor'),
     },
     'items-treemap': {
       type: 'treemap-chart',
       dataMapping: {
-        categoryKey: [{ id: 'invoiceItems.unit' }, { id: 'invoiceItems.name' }],
+        categoryKey: [{ id: 'invoiceItems.name' }],
         valueKey: [sum('invoiceItems.lineTotal')],
       },
-      format: title('Billing by unit'),
+      format: title('Giving by program'),
     },
     'payment-methods': {
       type: 'nightingale-chart',
@@ -127,7 +127,7 @@ const revenue: AgPageState = {
         valueKey: [sum('invoicePayments.amount')],
       },
       format: {
-        ...title('Payments by method'),
+        ...title('Gifts by payment method'),
         style: {
           theme: {
             nightingale: {
@@ -186,7 +186,7 @@ const receivables: AgPageState = {
     },
     'kpi-outstanding': kpi('Outstanding', sum('invoices.outstanding')),
     'kpi-overdue': kpi('Overdue', sum('invoices.overdueAmount')),
-    'kpi-open': kpi('Open invoices', countd('invoices.id')),
+    'kpi-open': kpi('Open pledges', countd('invoices.id')),
     'overdue-share': {
       type: 'radial-gauge',
       dataMapping: { value: [{ id: 'overdueShare' }] },
@@ -194,7 +194,7 @@ const receivables: AgPageState = {
         ...title('Overdue share'),
         style: {
           label: { typography: typography(24) },
-          secondaryLabel: { enabled: true, text: 'of receivables past due' },
+          secondaryLabel: { enabled: true, text: 'of open pledges past due' },
           scaleLabel: { min: 0, max: 1, typography: typography(11) },
         },
       },
@@ -207,7 +207,7 @@ const receivables: AgPageState = {
         legendKey: [{ id: 'invoices.status' }],
       },
       format: {
-        ...title('Receivables aging by customer'),
+        ...title('Pledges by donor and status'),
         style: { theme: { common: { legend: { enabled: true } } } },
       },
     },
@@ -227,7 +227,7 @@ const receivables: AgPageState = {
         ],
       },
       sort: [{ field: { id: 'invoices.daysOverdue' }, direction: 'desc' }],
-      format: title('Open invoices, most overdue first'),
+      format: title('Open pledges, most overdue first'),
     },
   },
   widgetLayout: {
@@ -255,7 +255,7 @@ const cash: AgPageState = {
   id: 'cash',
   widgets: {
     'kpi-balance': kpi('Available balance', sum('balances.available')),
-    'kpi-paid-out': kpi('Paid out (31 days)', sum('payouts.amount')),
+    'kpi-paid-out': kpi('Paid out (90 days)', sum('payouts.amount')),
     'kpi-fees': kpi('Payout fees', sum('payouts.fee')),
     'kpi-recipients': kpi('Recipients', countd('payouts.recipient')),
     'payout-treemap': {
@@ -298,7 +298,7 @@ const cash: AgPageState = {
         ],
       },
       sort: [{ field: { id: 'transactions.date' }, direction: 'desc' }],
-      format: title('Ledger'),
+      format: title('PayPal ledger'),
     },
   },
   widgetLayout: {
@@ -315,9 +315,9 @@ const cash: AgPageState = {
 const catalogue: AgPageState = {
   id: 'catalogue',
   widgets: {
-    'kpi-products': kpi('Products', countd('products.id')),
-    'kpi-plans': kpi('Billing plans', countd('plans.id')),
-    'kpi-monthly': kpi('Avg monthly price', avg('plans.monthlyPrice')),
+    'kpi-products': kpi('Programs', countd('products.id')),
+    'kpi-plans': kpi('Giving plans', countd('plans.id')),
+    'kpi-monthly': kpi('Avg monthly gift', avg('plans.monthlyPrice')),
     'kpi-trial': kpi('Avg trial days', avg('plans.trialDays')),
     'catalogue-sunburst': {
       type: 'sunburst-chart',
@@ -330,7 +330,7 @@ const catalogue: AgPageState = {
         valueKey: [sum('plans.monthlyPrice')],
       },
       format: title(
-        'Catalogue: type, product and plan (sized by monthly price)',
+        'Programs and giving plans (sized by monthly amount)',
       ),
     },
     'price-range': {
@@ -344,7 +344,7 @@ const catalogue: AgPageState = {
         ],
       },
       format: {
-        ...title('Monthly-normalised price range by product'),
+        ...title('Monthly gift range by program'),
         style: {
           theme: { common: { legend: { enabled: true, position: 'right' } } },
         },
@@ -357,7 +357,7 @@ const catalogue: AgPageState = {
         valueKey: [countd('plans.id')],
       },
       format: {
-        ...title('Plans by billing interval'),
+        ...title('Giving plans by interval'),
         style: {
           custom: {
             pieDataLabel: { enabled: true },
@@ -381,7 +381,7 @@ const catalogue: AgPageState = {
         ],
       },
       sort: [{ field: sum('plans.monthlyPrice'), direction: 'desc' }],
-      format: title('Plan catalogue'),
+      format: title('Giving plans'),
     },
   },
   widgetLayout: {

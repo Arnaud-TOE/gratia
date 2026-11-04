@@ -1,0 +1,15 @@
+import type { SVGProps } from 'react';
+
+// Gratia's mark: a heart cupped in a hand-drawn circle, in the theme's teal and amber.
+export function GratiaMark(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gratia" {...props}>
+      <rect width="40" height="40" rx="12" fill="var(--pp-blue)" />
+      <path
+        d="M20 29.5s-8.5-5.1-8.5-11.1c0-2.9 2.2-5 4.8-5 1.6 0 2.9.8 3.7 2 .8-1.2 2.1-2 3.7-2 2.6 0 4.8 2.1 4.8 5 0 6-8.5 11.1-8.5 11.1Z"
+        fill="#fff"
+      />
+      <circle cx="29.5" cy="11" r="3" fill="#f59e0b" />
+    </svg>
+  );
+}

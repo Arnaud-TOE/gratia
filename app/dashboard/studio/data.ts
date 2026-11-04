@@ -69,39 +69,44 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
 
   return {
     description:
-      'PayPal sandbox data fetched over the REST API for a merchant that sells subscription products and sends invoices. ' +
-      'Invoices are in USD, EUR or GBP and are not converted, so filter by currency before summing money. ' +
-      'Invoice payments are recorded externally (bank transfer, card, check, cash). The ledger holds payouts to affiliates, creators and customers.',
+      'PayPal sandbox data for Harbor Lane Animal Rescue, a small nonprofit animal shelter, fetched over the REST API. ' +
+      'Every gift, monthly sponsorship and business pledge is a PayPal invoice ("gift or pledge"); online donations made ' +
+      'through PayPal Checkout are recorded there too, as paid receipts. Amounts are in USD; filter by currency before ' +
+      'summing money if another one appears. Gift payments are how a gift was paid: PayPal, bank transfer, check, cash or card.',
     sources: [
       {
         id: 'customers',
-        description: 'Invoice recipients, keyed by lower-cased email.',
+        name: 'Donors',
+        description:
+          'Donors, keyed by lower-cased email. Organization is the business name for company donors and "Individual" for people.',
         data: data.customers,
         fields: fields([
-          ['id', 'Customer ID', 'textFormat', true],
-          ['name', 'Customer', 'textFormat'],
-          ['company', 'Company', 'textFormat'],
+          ['id', 'Donor ID', 'textFormat', true],
+          ['name', 'Donor', 'textFormat'],
+          ['company', 'Organization', 'textFormat'],
           ['email', 'Email', 'textFormat'],
         ]),
       },
       {
         id: 'invoices',
+        name: 'Gifts & pledges',
         description:
-          'One row per invoice. Issued amount excludes drafts, scheduled and cancelled invoices. Outstanding and aging apply only to open or partially paid invoices.',
+          'One row per gift or pledge (a PayPal invoice). Committed excludes drafts, scheduled and cancelled ones. Outstanding and ' +
+          'aging apply only to pledges still open or partially paid; an overdue pledge is one past its due date.',
         data: data.invoices,
         fields: fields([
           ['id', 'Invoice ID', 'textFormat', true],
-          ['number', 'Invoice', 'textFormat'],
-          ['customerId', 'Customer ID', 'textFormat', true],
-          ['status', 'Invoice Status', 'textFormat'],
+          ['number', 'Gift / pledge no.', 'textFormat'],
+          ['customerId', 'Donor ID', 'textFormat', true],
+          ['status', 'Status', 'textFormat'],
           ['statusGroup', 'Status Group', 'textFormat'],
           ['currency', 'Currency', 'textFormat'],
           ['paymentTerm', 'Payment Term', 'textFormat'],
-          ['invoiceDate', 'Invoice Date', 'dateFormat'],
+          ['invoiceDate', 'Gift Date', 'dateFormat'],
           ['dueDate', 'Due Date', 'dateFormat'],
-          ['total', 'Invoice Total', 'currencyFormat'],
-          ['issuedAmount', 'Invoiced', 'currencyFormat'],
-          ['paidAmount', 'Paid', 'currencyFormat'],
+          ['total', 'Amount', 'currencyFormat'],
+          ['issuedAmount', 'Committed', 'currencyFormat'],
+          ['paidAmount', 'Received', 'currencyFormat'],
           ['refundedAmount', 'Refunded', 'currencyFormat'],
           ['netCollected', 'Net Collected', 'currencyFormat'],
           ['isReceivable', 'Is Receivable', 'booleanFormat'],
@@ -115,13 +120,13 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
       },
       {
         id: 'invoiceItems',
-        name: 'Invoice Line Items',
-        description: 'Invoice lines. Line total is after line discount and tax, before invoice-level discount and shipping.',
+        name: 'Program Lines',
+        description: 'What each gift or pledge is for: one line per program (Sponsor a Pet, Medical Fund, Winter Shelter Drive...).',
         data: data.invoiceItems,
         fields: fields([
           ['id', 'Line ID', 'textFormat', true],
           ['invoiceId', 'Invoice ID', 'textFormat', true],
-          ['name', 'Item', 'textFormat'],
+          ['name', 'Program', 'textFormat'],
           ['unit', 'Unit', 'textFormat'],
           ['quantity', 'Quantity', 'decimalFormat'],
           ['unitPrice', 'Unit Price', 'currencyFormat'],
@@ -133,8 +138,8 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
       },
       {
         id: 'invoicePayments',
-        name: 'Invoice Payments',
-        description: 'Payments and refunds recorded against invoices. Signed amount is negative for refunds; sum it for net cash.',
+        name: 'Gift Payments',
+        description: 'Payments and refunds recorded against gifts and pledges. Net cash is negative for refunds; sum it for net giving.',
         data: data.invoicePayments,
         fields: fields([
           ['id', 'Payment ID', 'textFormat', true],
@@ -148,20 +153,21 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
       },
       {
         id: 'products',
-        description: 'Catalog products sold as subscriptions.',
+        name: 'Programs',
+        description: "The rescue's programs, from the PayPal catalog.",
         data: data.products,
         fields: fields([
-          ['id', 'Product ID', 'textFormat', true],
-          ['name', 'Product', 'textFormat'],
-          ['type', 'Product Type', 'textFormat'],
-          ['category', 'Product Category', 'textFormat'],
-          ['description', 'Product Description', 'textFormat'],
+          ['id', 'Program ID', 'textFormat', true],
+          ['name', 'Program Name', 'textFormat'],
+          ['type', 'Program Type', 'textFormat'],
+          ['category', 'Program Category', 'textFormat'],
+          ['description', 'Program Description', 'textFormat'],
         ]),
       },
       {
         id: 'plans',
-        name: 'Billing Plans',
-        description: 'Subscription billing plans, in USD. Monthly price normalises weekly, quarterly and annual pricing to one month.',
+        name: 'Giving Plans',
+        description: 'Monthly and annual giving plans (PayPal billing plans), in USD. Monthly price normalises yearly plans to one month.',
         data: data.plans,
         fields: fields([
           ['id', 'Plan ID', 'textFormat', true],
@@ -177,7 +183,7 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
       },
       {
         id: 'transactions',
-        description: 'Account ledger from Transaction Search, last 31 days. Amounts are signed (debits negative); net is amount plus fee.',
+        description: 'PayPal account ledger from Transaction Search, last 90 days. Amounts are signed (debits negative); net is amount plus fee.',
         data: data.transactions,
         fields: fields([
           ['id', 'Transaction ID', 'textFormat'],
@@ -243,9 +249,9 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition {
       },
     ],
     expressions: [
-      ratio('collectionRate', 'Collection Rate', 'Paid / invoiced. Filter to one currency first.', 'invoices.paidAmount', 'invoices.issuedAmount'),
-      ratio('overdueShare', 'Overdue Share', 'Share of outstanding receivables that is past due.', 'invoices.overdueAmount', 'invoices.outstanding'),
-      ratio('refundRate', 'Refund Rate', 'Refunded / paid.', 'invoices.refundedAmount', 'invoices.paidAmount'),
+      ratio('collectionRate', 'Collection Rate', 'Received / committed. Filter to one currency first.', 'invoices.paidAmount', 'invoices.issuedAmount'),
+      ratio('overdueShare', 'Overdue Share', 'Share of outstanding pledges that is past due.', 'invoices.overdueAmount', 'invoices.outstanding'),
+      ratio('refundRate', 'Refund Rate', 'Refunded / received.', 'invoices.refundedAmount', 'invoices.paidAmount'),
     ],
   };
 }

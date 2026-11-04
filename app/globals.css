@@ -2,6 +2,7 @@
 
 @theme inline {
   --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-nunito-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -11,38 +12,39 @@ body {
 }
 
 /*
- * PayPal design tokens: the single source of truth for the dashboard shell (through the
+ * Gratia design tokens: the single source of truth for the dashboard shell (through the
  * Tailwind colours below, e.g. bg-pp-blue), for AG Studio (app/dashboard/studio/theme.ts)
  * and for AG Grid (app/(endpoints)/data-grid.tsx), whose themes reference these variables directly.
+ * The names are the boilerplate's; the values are Gratia's warm teal theme.
  */
 :root {
-  --pp-navy: #001c64;
-  --pp-blue: #0070e0;
-  --pp-blue-dark: #003087;
-  --pp-sky: #009cde;
-  --pp-highlight: #e6f0fc;
-  --pp-canvas: #f5f7fa;
+  --pp-navy: #123b3a;
+  --pp-blue: #0f766e;
+  --pp-blue-dark: #0b4f4a;
+  --pp-sky: #14b8a6;
+  --pp-highlight: #e3f2ef;
+  --pp-canvas: #f6f4ef;
   --pp-surface: #ffffff;
-  --pp-border: #dbe1e8;
-  --pp-gridline: #e9edf2;
-  --pp-ink: #001435;
-  --pp-muted: #545d68;
-  --pp-success: #00875a;
+  --pp-border: #e2ddd3;
+  --pp-gridline: #ede9e1;
+  --pp-ink: #18272b;
+  --pp-muted: #56636a;
+  --pp-success: #15803d;
   --pp-warning: #b45309;
-  --pp-danger: #c4122f;
-  --pp-font: "PayPal Open", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --pp-danger: #b91c1c;
+  --pp-font: var(--font-nunito-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-  /* Chart series, PayPal blue and navy first. */
-  --pp-chart-1: #0070e0;
-  --pp-chart-2: #001c64;
-  --pp-chart-3: #00a8a8;
-  --pp-chart-4: #f5a623;
-  --pp-chart-5: #7b61ff;
-  --pp-chart-6: #e8615a;
-  --pp-chart-7: #60cdff;
-  --pp-chart-8: #2e9e6a;
-  --pp-chart-9: #b47cd8;
-  --pp-chart-10: #8a94a6;
+  /* Chart series: teal and amber first, then warm accents. */
+  --pp-chart-1: #0f766e;
+  --pp-chart-2: #f59e0b;
+  --pp-chart-3: #e76f51;
+  --pp-chart-4: #264653;
+  --pp-chart-5: #8ab17d;
+  --pp-chart-6: #7c5cbf;
+  --pp-chart-7: #2a9d8f;
+  --pp-chart-8: #e9c46a;
+  --pp-chart-9: #f4a261;
+  --pp-chart-10: #94a3b8;
 }
 
 @theme inline {
