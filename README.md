@@ -17,6 +17,8 @@ shelter, **Harbor Lane Animal Rescue**.
 | Donation page | `/donate` on the live demo |
 | Sandbox buyer login | in the Devpost testing instructions |
 
+![The Giving page: KPIs, the live gift feed and the loyalty heatmap](docs/dashboard.png)
+
 ## TL;DR for judges
 
 - **Dashboard:** every gift, monthly sponsorship and business pledge from PayPal in one [AG Studio](https://www.ag-grid.com/studio/) dashboard, re-themed as Gratia, with **three custom widgets** AG Studio doesn't ship: a live gift feed, a donor-by-month loyalty heatmap and a donor wall. Clicking a donor filters the page.
@@ -92,6 +94,8 @@ npm run lint
 npm run typecheck
 npm test
 ```
+
+`/api/health` on a running deployment says whether PayPal answers and whether the licence and the model key are set, without showing them.
 
 CI (`.github/workflows/ci.yml`) runs all three on every push.
 

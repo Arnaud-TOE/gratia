@@ -10,6 +10,7 @@
 // Nothing tracks edits as they happen. Save reads the report from Studio with getState(), and
 // leaving a report compares Studio's state with the saved one there and then.
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   AgStudioAiModule,
@@ -77,6 +78,19 @@ const STUDIO_TEXT = {
   panelTitleAi: 'Your development director',
   aiMessageInputPlaceholder: 'Ask your director…',
 };
+
+// The report is laid out for a laptop or larger; a phone gets a way forward instead of a squeezed grid.
+function PhoneNotice() {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-pp-canvas p-8 text-center md:hidden">
+      <h2 className="text-2xl font-bold text-pp-navy">The team dashboard needs a bigger screen</h2>
+      <p className="mt-3 max-w-sm text-pp-muted">Open this page on a laptop to see the report and talk to the director. On a phone, try what donors see.</p>
+      <Link href="/donate" className="mt-6 rounded-full bg-pp-blue px-6 py-3 font-semibold text-white">
+        See the donation page
+      </Link>
+    </div>
+  );
+}
 
 // For things built once that need the current value later, like the agent's tools.
 function latestValue<T>(initial: T) {
@@ -377,6 +391,7 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
       />
       {approvalDialog}
       {arrival && <GiftToast gift={arrival} onDismiss={dismissArrival} />}
+      <PhoneNotice />
     </AppShell>
   );
 }
