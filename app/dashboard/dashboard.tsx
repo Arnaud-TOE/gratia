@@ -49,6 +49,7 @@ import { DashboardSkeleton } from './components/skeleton';
 import * as reportState from './report-state';
 import { buildAi } from './studio/ai';
 import { buildStudioData, hasData } from './studio/data';
+import { toolDisplay } from './studio/tool-display';
 import { agStudioPayPalTheme } from './studio/theme';
 import { gratiaWidgets, type GratiaRegistry } from './studio/widgets';
 import { useLiveGifts } from './use-live-gifts';
@@ -70,6 +71,12 @@ type StudioHistory = { canUndo: boolean; canRedo: boolean };
 const NO_HISTORY: StudioHistory = { canUndo: false, canRedo: false };
 
 const noSubscription = () => () => {};
+
+// The assistant goes by the job it does here.
+const STUDIO_TEXT = {
+  panelTitleAi: 'Your development director',
+  aiMessageInputPlaceholder: 'Ask your director…',
+};
 
 // For things built once that need the current value later, like the agent's tools.
 function latestValue<T>(initial: T) {
@@ -149,9 +156,22 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
     if (api) api.setState(next(api.getState()));
   };
   const changeMode = (next: AgStudioMode) => {
-    updateState((s) => reportState.withFiltersPanelFor(next, s));
+    updateState((s) => reportState.withEditPanels(true, reportState.withFiltersPanelFor(next, s)));
     setMode(next);
   };
+  // Studio creates the Compose and Data panels on entering edit mode, so they can only be tucked
+  // away once it is there.
+  const askingDirector = useRef(false);
+  const askDirector = () => {
+    askingDirector.current = true;
+    changeMode('edit');
+  };
+  useEffect(() => {
+    const api = apiRef.current;
+    if (mode !== 'edit' || !askingDirector.current || !api) return;
+    askingDirector.current = false;
+    api.setState(reportState.withEditPanels(false, api.getState()));
+  }, [mode]);
 
   // --- Saving -----------------------------------------------------------------------
   const save = () => {
@@ -277,6 +297,7 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
         onEditingChange={(next) =>
           next ? changeMode('edit') : guard(() => changeMode('view'))
         }
+        onAsk={ai ? askDirector : undefined}
       />
 
       <div className="min-h-0 flex-1">
@@ -289,6 +310,8 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
               layout={{ widgetBorderEnabled: true }}
               data={studioData}
               ai={ai}
+              aiToolDisplay={toolDisplay}
+              localeText={STUDIO_TEXT}
               initialState={initialState}
               mode={mode}
               onApiReady={(event) => {

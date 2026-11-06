@@ -51,14 +51,6 @@ const kpi = (text: string, value: { id: string; aggregation?: 'sum' | 'avg' | 'c
 const revenue: AgPageState = {
   id: 'revenue',
   widgets: {
-    'invoice-date': {
-      type: 'date-filter',
-      dataMapping: { value: [{ id: 'invoices.invoiceDate' }] },
-      // A from-to range, empty until someone picks dates. (A relative "last N months" default
-      // fails to apply on load in Studio 3.0 with "must be a two-element range", and unset it
-      // reads as "Last 3 Select".)
-      format: { style: { filterType: 'between' } },
-    },
     'kpi-invoiced': kpi(
       'Committed',
       sum('invoices.issuedAmount'),
@@ -167,7 +159,7 @@ const revenue: AgPageState = {
       dataMapping: {
         donor: [{ id: 'customers.name' }],
         amount: [sum('invoicePayments.signedAmount')],
-        gifts: [countd('invoicePayments.id')],
+        gifts: [countd('invoicePayments.giftId')],
       },
       format: title('Donor wall: thank you!'),
     }),
@@ -188,20 +180,23 @@ const revenue: AgPageState = {
     },
   },
   widgetLayout: {
-    'kpi-invoiced': at(0, 0, 4, 8),
-    'kpi-collected': at(4, 0, 4, 8),
-    'kpi-outstanding': at(8, 0, 4, 8),
-    'kpi-overdue': at(12, 0, 4, 8),
-    'invoice-date': at(16, 0, 8, 8),
-    'gift-feed': at(0, 8, 8, 22),
-    'loyalty-heatmap': at(8, 8, 16, 22),
-    'donor-wall': at(0, 30, 8, 24),
-    'billed-vs-collected': at(8, 30, 16, 24),
-    'collection-rate': at(0, 54, 8, 18),
-    'items-treemap': at(8, 54, 8, 18),
-    'status-sunburst': at(16, 54, 8, 18),
-    'payment-methods': at(0, 72, 8, 24),
-    'invoice-status-pivot': at(8, 72, 16, 24),
+    'kpi-invoiced': at(0, 0, 6, 7),
+    'kpi-collected': at(6, 0, 6, 7),
+    'kpi-outstanding': at(12, 0, 6, 7),
+    'kpi-overdue': at(18, 0, 6, 7),
+    'gift-feed': at(0, 7, 8, 22),
+    'loyalty-heatmap': at(8, 7, 16, 22),
+    'donor-wall': at(0, 29, 8, 24),
+    'billed-vs-collected': at(8, 29, 16, 24),
+    'collection-rate': at(0, 53, 8, 18),
+    'items-treemap': at(8, 53, 8, 18),
+    'status-sunburst': at(16, 53, 8, 18),
+    'payment-methods': at(0, 71, 8, 24),
+    'invoice-status-pivot': at(8, 71, 16, 24),
+  },
+  // Ready in the Filters panel, on the right edge, with nothing selected.
+  filter: {
+    page: [{ field: { id: 'invoices.invoiceDate' } }, { field: { id: 'invoicePayments.program' } }],
   },
 };
 

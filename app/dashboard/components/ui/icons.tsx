@@ -28,6 +28,7 @@ export const ReportIcon = icon(
   </>,
 );
 export const PlusIcon = icon(<path d="M12 5v14M5 12h14" />);
+export const SparkleIcon = icon(<path d="m12 3 1.9 5.6L19.5 10.5 13.9 12.4 12 18l-1.9-5.6L4.5 10.5l5.6-1.9zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />);
 export const RefreshIcon = icon(
   <>
     <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8" />

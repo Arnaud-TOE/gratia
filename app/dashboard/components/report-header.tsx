@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { EditIcon, EyeIcon, RedoIcon, RefreshIcon, UndoIcon } from './ui/icons';
+import { EditIcon, EyeIcon, RedoIcon, RefreshIcon, SparkleIcon, UndoIcon } from './ui/icons';
 import { Button, IconButton } from './ui/ui';
 
 // The bar above Studio: which report and page you're on, how fresh the data is, and the
@@ -20,6 +20,7 @@ export function ReportHeader({
   onSave,
   onDiscard,
   onEditingChange,
+  onAsk,
 }: {
   reportName: string;
   pageTitle?: string;
@@ -33,6 +34,8 @@ export function ReportHeader({
   onSave: () => void;
   onDiscard: () => void;
   onEditingChange: (editing: boolean) => void;
+  /** Opens the AI development director; omitted when no model is configured. */
+  onAsk?: () => void;
 }) {
   return (
     <div className="flex flex-wrap items-start gap-x-6 gap-y-3 border-b border-pp-border bg-white px-8 py-5">
@@ -69,9 +72,16 @@ export function ReportHeader({
             <EyeIcon className="size-4" /> View
           </Button>
         ) : (
-          <Button variant="ghost" size="sm" onClick={() => onEditingChange(true)}>
-            <EditIcon className="size-4" /> Edit
-          </Button>
+          <>
+            {onAsk && (
+              <Button variant="primary" size="sm" onClick={onAsk}>
+                <SparkleIcon className="size-4" /> Ask your director
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => onEditingChange(true)}>
+              <EditIcon className="size-4" /> Edit
+            </Button>
+          </>
         )}
       </div>
     </div>

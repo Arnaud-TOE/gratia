@@ -55,7 +55,7 @@ function gift(customerId: string, daysBack: number, amount: number, n: number) {
   const id = `${customerId}-${n}`;
   return {
     invoice: invoice(id, customerId),
-    payment: { id: `${id}-p`, invoiceId: id, kind: 'Payment', method: 'Check', date: daysAgo(daysBack), amount, signedAmount: amount, program: 'Medical Fund' },
+    payment: { id: `${id}-p`, giftId: `${id}-p`, invoiceId: id, kind: 'Payment', method: 'Check', date: daysAgo(daysBack), amount, signedAmount: amount, program: 'Medical Fund' },
   };
 }
 
@@ -126,5 +126,23 @@ describe('giftsSince', () => {
     const refund = gift('a', 0, 50, 3);
     refund.payment.kind = 'Refund';
     expect(giftsSince(new Set(['a-1-p', 'a-2-p']), withGifts(customers, [...gifts, refund]))).toEqual([]);
+  });
+});
+
+describe('donorsAtRisk and refunds', () => {
+  const customers = [{ id: 'a', name: 'Ana Reyes', company: 'Individual', email: 'a@example.com' }];
+
+  it('ignores a gift refunded in full', () => {
+    const kept = gift('a', 200, 500, 1);
+    const refunded = gift('a', 198, 500, 2);
+    refunded.invoice.paidAmount = 500;
+    refunded.invoice.refundedAmount = 500;
+    const [donor] = donorsAtRisk(withGifts(customers, [kept, refunded]));
+    expect(donor).toMatchObject({ gifts: 1, totalGiven: 500, segment: 'First gift, never returned' });
+  });
+
+  it('does not call two gifts close together a monthly habit', () => {
+    const [donor] = donorsAtRisk(withGifts(customers, [gift('a', 200, 50, 1), gift('a', 190, 50, 2)]));
+    expect(donor.segment).toBe('Lapsed repeat donor');
   });
 });

@@ -148,9 +148,14 @@ export function invoiceItemRows(invoices: Invoice[]) {
 }
 
 function invoicePaymentRows(invoices: Invoice[]) {
-  return invoices.flatMap((inv) => [
+  return invoices.flatMap((inv) => {
+    const refunded = amountOf(inv.refunds?.refund_amount);
+    const refundedInFull = refunded > 0 && refunded >= amountOf(inv.payments?.paid_amount);
+    return [
     ...(inv.payments?.transactions ?? []).map((t, i) => ({
       id: t.payment_id ?? `${inv.id}-payment-${i + 1}`,
+      // Counts gifts: blank for refunds, and for a payment that was refunded in full.
+      giftId: refundedInFull ? null : (t.payment_id ?? `${inv.id}-payment-${i + 1}`),
       invoiceId: inv.id,
       kind: 'Payment',
       method: t.method ? humanise(t.method) : 'Unknown',
@@ -161,6 +166,7 @@ function invoicePaymentRows(invoices: Invoice[]) {
     })),
     ...(inv.refunds?.transactions ?? []).map((t, i) => ({
       id: t.recipient_transaction_id ?? `${inv.id}-refund-${i + 1}`,
+      giftId: null,
       invoiceId: inv.id,
       kind: 'Refund',
       method: t.method ? humanise(t.method) : 'Unknown',
@@ -169,7 +175,8 @@ function invoicePaymentRows(invoices: Invoice[]) {
       signedAmount: -amountOf(t.amount),
       program: inv.items?.[0]?.name ?? null,
     })),
-  ]);
+    ];
+  });
 }
 
 // --- Catalog ------------------------------------------------------------------------

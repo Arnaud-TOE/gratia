@@ -26,6 +26,7 @@ export type DonorAtRisk = {
 const MONTHLY_GAP_DAYS = 45;
 const REPEAT_GAP_DAYS = 90;
 const FIRST_GIFT_WINDOW = [30, 365] as const;
+const MIN_GIFTS_FOR_A_HABIT = 3;
 
 export function donorsAtRisk(data: DashboardData, today = new Date(data.asOf)): DonorAtRisk[] {
   const invoicesById = new Map(data.invoices.map((invoice) => [invoice.id, invoice]));
@@ -36,6 +37,8 @@ export function donorsAtRisk(data: DashboardData, today = new Date(data.asOf)): 
   for (const payment of data.invoicePayments) {
     const invoice = invoicesById.get(payment.invoiceId);
     if (!invoice || payment.kind !== 'Payment' || !payment.date) continue;
+    // A gift refunded in full never happened, as far as a thank-you note is concerned.
+    if (invoice.refundedAmount > 0 && invoice.refundedAmount >= invoice.paidAmount) continue;
     const gifts = giftsByDonor.get(invoice.customerId) ?? [];
     gifts.push({ date: payment.date, amount: payment.amount, program: programsByInvoice.get(invoice.id) });
     giftsByDonor.set(invoice.customerId, gifts);
@@ -76,7 +79,8 @@ function segmentOf(dates: string[], daysSince: number): DonorSegment | null {
   }
   const gaps = dates.slice(1).map((date, i) => (Date.parse(date) - Date.parse(dates[i])) / DAY_MS);
   const typicalGap = gaps.sort((a, b) => a - b)[Math.floor(gaps.length / 2)];
-  if (typicalGap <= 35) return daysSince > MONTHLY_GAP_DAYS ? 'Lapsed monthly sponsor' : null;
+  // It takes more than two gifts to make a habit.
+  if (dates.length >= MIN_GIFTS_FOR_A_HABIT && typicalGap <= 35) return daysSince > MONTHLY_GAP_DAYS ? 'Lapsed monthly sponsor' : null;
   return daysSince > REPEAT_GAP_DAYS ? 'Lapsed repeat donor' : null;
 }
 

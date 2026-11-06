@@ -116,7 +116,7 @@ export const donorWallDefinition: AgWidgetDefinition<'donor-wall'> = {
     gifts: {
       type: 'field',
       supportedRoles: ['numeric'],
-      aiDescription: 'Optional: how many gifts, e.g. a distinct count of Gift Payments > Payment ID.',
+      aiDescription: 'Optional: how many gifts, e.g. a distinct count of the id field invoicePayments.giftId.',
     },
   },
   form: (params) =>

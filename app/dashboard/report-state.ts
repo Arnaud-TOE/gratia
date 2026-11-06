@@ -21,6 +21,17 @@ export const withFiltersPanelFor = (_mode: AgStudioMode, state: AgReportState): 
   panels: { ...state.panels, filters: { ...state.panels?.filters, collapsed: true } },
 });
 
+// Compose and Data, open for editing by hand or tucked away for talking to the director, who sits
+// in edit mode's left panel. Either way the report keeps enough room to watch what happens to it.
+export const withEditPanels = (open: boolean, state: AgReportState): AgReportState => ({
+  ...state,
+  panels: {
+    ...state.panels,
+    edit: { ...state.panels?.edit, collapsed: !open },
+    data: { ...state.panels?.data, collapsed: !open },
+  },
+});
+
 // Studio leaves page navigation to the host: these add, remove and select pages in state.
 export const selectPage = (state: AgReportState, pageId: string): AgReportState => ({ ...state, selectedPageId: pageId });
 
