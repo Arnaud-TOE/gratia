@@ -292,99 +292,60 @@ const cash: AgPageState = {
   id: 'cash',
   widgets: {
     'kpi-balance': kpi('Available balance', sum('balances.available')),
-    'kpi-paid-out': kpi('Paid out (90 days)', sum('payouts.amount')),
-    'kpi-fees': kpi('Payout fees', sum('payouts.fee')),
-    'kpi-recipients': kpi('Recipients', countd('payouts.recipient')),
-    'payout-treemap': {
-      type: 'treemap-chart',
+    'kpi-received': kpi('Gifts received (90 days)', sum('transactions.received')),
+    'kpi-fees': kpi('PayPal fees (90 days)', sum('transactions.feesPaid')),
+    'kpi-refunded': kpi('Refunded (90 days)', sum('transactions.refunded')),
+    'net-by-type': {
+      type: 'column-chart-grouped',
       dataMapping: {
-        // Payouts aren't related to customers, so recipient (not company) is the second level.
-        categoryKey: [{ id: 'payouts.campaign' }, { id: 'payouts.recipient' }],
-        valueKey: [sum('payouts.amount')],
+        categoryKey: [{ id: 'transactions.eventType' }],
+        valueKey: [sum('transactions.net')],
       },
-      format: title('Payouts by campaign and recipient'),
-    },
-    'campaign-donut': {
-      type: 'donut-chart',
-      dataMapping: {
-        categoryKey: [{ id: 'payouts.campaign' }],
-        valueKey: [sum('payouts.amount')],
-      },
-      format: {
-        ...title('Payout share by campaign'),
-        style: {
-          custom: {
-            pieDataLabel: { enabled: true },
-            totalLabel: { enabled: true },
-          },
-        },
-      },
+      format: title('Net cash by type'),
     },
     ledger: {
       type: 'grid',
       dataMapping: {
         cols: [
-          { id: 'transactions.date' },
+          { id: 'transactions.day' },
           { id: 'transactions.eventType' },
-          { id: 'transactions.status' },
-          { id: 'transactions.counterparty' },
-          { id: 'transactions.note' },
           sum('transactions.amount'),
           sum('transactions.fee'),
           sum('transactions.net'),
+          { id: 'transactions.id' },
         ],
       },
-      sort: [{ field: { id: 'transactions.date' }, direction: 'desc' }],
-      format: title('PayPal ledger'),
+      sort: [{ field: { id: 'transactions.day' }, direction: 'desc' }],
+      format: { ...title('PayPal ledger, newest first'), style: { columnAutoSize: true } },
     },
   },
   widgetLayout: {
     'kpi-balance': at(0, 0, 6, 7),
-    'kpi-paid-out': at(6, 0, 6, 7),
+    'kpi-received': at(6, 0, 6, 7),
     'kpi-fees': at(12, 0, 6, 7),
-    'kpi-recipients': at(18, 0, 6, 7),
-    'payout-treemap': at(0, 7, 15, 18),
-    'campaign-donut': at(15, 7, 9, 18),
-    ledger: at(0, 25, 24, 30),
+    'kpi-refunded': at(18, 0, 6, 7),
+    ledger: at(0, 7, 16, 30),
+    'net-by-type': at(16, 7, 8, 30),
   },
 };
 
 const catalogue: AgPageState = {
   id: 'catalogue',
   widgets: {
+    'kpi-given': kpi('Given to programs', sum('invoiceItems.lineTotal')),
     'kpi-products': kpi('Programs', countd('products.id')),
     'kpi-plans': kpi('Giving plans', countd('plans.id')),
-    'kpi-monthly': kpi('Avg monthly gift', avg('plans.monthlyPrice')),
-    'kpi-trial': kpi('Avg trial days', avg('plans.trialDays')),
-    'catalogue-sunburst': {
-      type: 'sunburst-chart',
+    'kpi-monthly': kpi('Avg monthly plan', avg('plans.monthlyPrice')),
+    'program-months': {
+      type: 'column-chart-stacked',
       dataMapping: {
-        categoryKey: [
-          { id: 'products.type' },
-          { id: 'products.name' },
-          { id: 'plans.name' },
-        ],
-        valueKey: [sum('plans.monthlyPrice')],
-      },
-      format: title(
-        'Programs and giving plans (sized by monthly amount)',
-      ),
-    },
-    'price-range': {
-      type: 'bar-chart-grouped',
-      dataMapping: {
-        categoryKey: [{ id: 'products.name' }],
-        valueKey: [
-          { id: 'plans.monthlyPrice', aggregation: 'min' },
-          avg('plans.monthlyPrice'),
-          { id: 'plans.monthlyPrice', aggregation: 'max' },
-        ],
+        categoryKey: [{ id: 'calendar::month' }],
+        valueKey: [sum('invoiceItems.lineTotal')],
+        legendKey: [{ id: 'invoiceItems.name' }],
       },
       format: {
-        ...title('Monthly gift range by program'),
-        style: {
-          theme: { common: { legend: { enabled: true, position: 'right' } } },
-        },
+        ...title('Giving to each program, month by month'),
+        style: { theme: { common: { legend: { enabled: true } } } },
       },
     },
     'plan-intervals': {
@@ -407,29 +368,26 @@ const catalogue: AgPageState = {
       type: 'grid',
       dataMapping: {
         cols: [
-          { id: 'products.name' },
           { id: 'plans.name' },
+          { id: 'products.name' },
           { id: 'plans.status' },
           { id: 'plans.billingInterval' },
           sum('plans.price'),
           sum('plans.monthlyPrice'),
-          sum('plans.trialDays'),
-          sum('plans.setupFee'),
         ],
       },
       sort: [{ field: sum('plans.monthlyPrice'), direction: 'desc' }],
-      format: title('Giving plans'),
+      format: { ...title('Giving plans in PayPal'), style: { columnAutoSize: true } },
     },
   },
   widgetLayout: {
-    'kpi-products': at(0, 0, 6, 7),
-    'kpi-plans': at(6, 0, 6, 7),
-    'kpi-monthly': at(12, 0, 6, 7),
-    'kpi-trial': at(18, 0, 6, 7),
-    'plan-intervals': at(0, 7, 10, 20),
-    'price-range': at(10, 7, 14, 20),
-    plans: at(0, 27, 16, 24),
-    'catalogue-sunburst': at(16, 27, 8, 24),
+    'kpi-given': at(0, 0, 6, 7),
+    'kpi-products': at(6, 0, 6, 7),
+    'kpi-plans': at(12, 0, 6, 7),
+    'kpi-monthly': at(18, 0, 6, 7),
+    'program-months': at(0, 7, 16, 22),
+    'plan-intervals': at(16, 7, 8, 22),
+    plans: at(0, 29, 24, 18),
   },
 };
 // The report opens on its first page.

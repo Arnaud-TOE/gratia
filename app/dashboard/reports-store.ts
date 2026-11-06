@@ -26,7 +26,7 @@ export const BUILT_IN_ID = 'paypal-overview';
 const defaultPageTitles: Record<string, string> = {
   revenue: 'Giving',
   receivables: 'Pledges',
-  cash: 'Cash & payouts',
+  cash: 'PayPal cash',
   catalogue: 'Programs & plans',
 };
 

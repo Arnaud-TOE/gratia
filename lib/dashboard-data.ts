@@ -122,8 +122,11 @@ function customerRows(invoices: Invoice[]) {
   return [...byId.values()];
 }
 
-function invoiceItemRows(invoices: Invoice[]) {
-  return invoices.flatMap((inv) =>
+// Only what was actually committed: a draft or a cancelled pledge shouldn't count towards a program.
+export function invoiceItemRows(invoices: Invoice[]) {
+  return invoices
+    .filter((inv) => !UNISSUED.has(inv.status))
+    .flatMap((inv) =>
     (inv.items ?? []).map((item, i) => {
       const gross = Number(item.quantity) * amountOf(item.unit_amount);
       const discount = item.discount?.amount ? amountOf(item.discount.amount) : (gross * Number(item.discount?.percent ?? 0)) / 100;
@@ -207,11 +210,18 @@ function planRows(plans: Plan[]) {
 
 // --- Ledger -------------------------------------------------------------------------
 
+// PayPal's event codes in a volunteer's words. T00xx are payments; other codes are rare here.
 const EVENT_TYPES: Record<string, string> = {
   T0001: 'Payout',
-  T1105: 'Hold released',
-  T1503: 'Payout hold',
+  T1106: 'Reversal',
+  T1107: 'Refund',
 };
+
+const eventTypeOf = (code = '') => EVENT_TYPES[code] ?? (code.startsWith('T00') ? 'Gift' : code ? 'Other' : 'Unknown');
+
+// Not gifts or spending: money set aside while a payout is processed (it comes straight back), and
+// the balance the sandbox starts with.
+const BOOKKEEPING = new Set(['T1105', 'T1503', 'T1900']);
 
 const STATUSES: Record<string, string> = {
   S: 'Success',
@@ -229,20 +239,28 @@ const campaignOf = (customField?: string) => {
   return campaign ? humanise(campaign) : 'Other';
 };
 
-function transactionRows(transactions: Transaction[]) {
-  return transactions.map(({ transaction_info: t, payer_info: p }) => {
+export function transactionRows(transactions: Transaction[]) {
+  return transactions
+    .filter(({ transaction_info: t }) => !BOOKKEEPING.has(t.transaction_event_code ?? ''))
+    .map(({ transaction_info: t, payer_info: p }) => {
     const amt = amountOf(t.transaction_amount);
     const fee = amountOf(t.fee_amount);
+    const eventType = eventTypeOf(t.transaction_event_code);
     return {
       id: t.transaction_id,
       date: t.transaction_initiation_date ?? null,
-      eventType: EVENT_TYPES[t.transaction_event_code ?? ''] ?? t.transaction_event_code ?? 'Unknown',
+      day: t.transaction_initiation_date?.slice(0, 10) ?? null,
+      eventType,
       status: statusOf(t.transaction_status),
       direction: amt < 0 ? 'Debit' : 'Credit',
       currency: t.transaction_amount?.currency_code ?? null,
       amount: amt,
       fee,
       net: round2(amt + fee),
+      // Separate columns, so each can be summed on its own. Fees come back negative from PayPal.
+      received: eventType === 'Gift' ? amt : 0,
+      refunded: eventType === 'Refund' ? -amt : 0,
+      feesPaid: round2(-fee),
       endingBalance: t.ending_balance ? amountOf(t.ending_balance) : null,
       counterparty: p?.email_address ?? null,
       note: t.transaction_note ?? null,
