@@ -12,9 +12,9 @@ shelter, **Harbor Lane Animal Rescue**.
 
 | | |
 |---|---|
-| Live demo | _added at submission_ |
+| Live demo | [gratia-peach.vercel.app](https://gratia-peach.vercel.app) |
 | Demo video | _added at submission_ |
-| Donation page | `/donate` on the live demo |
+| Donation page | [gratia-peach.vercel.app/donate](https://gratia-peach.vercel.app/donate) |
 | Sandbox buyer login | in the Devpost testing instructions |
 
 ![The Giving page: KPIs, the live gift feed and the loyalty heatmap](docs/dashboard.png)
