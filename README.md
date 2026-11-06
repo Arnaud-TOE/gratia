@@ -33,7 +33,7 @@ shelter, **Harbor Lane Animal Rescue**.
 | Donations | Orders v2: create and capture, through the APIMatic-generated **PayPal Server SDK** (`@paypal/paypal-server-sdk`) | `lib/donations.ts`, `app/api/donations` |
 | Checkout button | **PayPal JavaScript SDK v6** (`paypal-payments` donate button) | `app/donate/donate-form.tsx` |
 | Gifts, pledges, receipts | Invoicing v2: create, send, record payment, record refund, **remind** | `lib/donations.ts`, `app/api/pledges`, `scripts/seed-demo-data.mjs` |
-| Live updates | Invoicing v2: the invoice count, polled while a dashboard is open, then a re-read of what changed | `app/api/gifts/pulse`, `app/dashboard/use-live-gifts.ts`, `lib/paypal.ts` |
+| Live updates | Invoicing v2 search: the count of paid invoices, polled while a dashboard is open, then a re-read of what changed | `app/api/gifts/pulse`, `app/dashboard/use-live-gifts.ts`, `lib/paypal.ts` |
 | Ledger | Transaction Search (three 31-day windows) and Balances | `lib/paypal.ts`, `lib/dashboard-data.ts` |
 | Programs and giving plans | Catalog Products and Billing Plans | `lib/paypal.ts` |
 | Demo data | All of the above, plus sandbox card captures and a refund | `scripts/seed-demo-data.mjs` |

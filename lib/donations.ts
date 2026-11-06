@@ -10,6 +10,7 @@ import {
   PaypalExperienceUserAction,
   PaypalWalletContextShippingPreference,
 } from '@paypal/paypal-server-sdk';
+import { after } from 'next/server';
 import { ORGANIZATION } from './organization';
 import { post } from './paypal';
 import { ordersApi } from './paypal-sdk';
@@ -86,16 +87,13 @@ export async function captureDonation(orderId: string): Promise<DonationReceipt>
   const surname = order.payer?.name?.surname ?? '';
   const amount = capture.amount?.value ?? '0.00';
   const campaign = unit?.description ?? 'General fund';
-  const receiptNumber = await recordReceipt({
-    captureId: capture.id,
-    given,
-    surname,
-    email: order.payer?.emailAddress,
-    amount,
-    campaign,
-  });
-  return { donor: `${given} ${surname}`.trim(), amount, campaign, receiptNumber };
+  // The gift is complete. The receipt takes three more PayPal calls, so the donor doesn't wait for it.
+  const gift = { captureId: capture.id, given, surname, email: order.payer?.emailAddress, amount, campaign };
+  after(() => recordReceipt(gift));
+  return { donor: `${given} ${surname}`.trim(), amount, campaign, receiptNumber: receiptNumberFor(capture.id) };
 }
+
+const receiptNumberFor = (captureId: string) => `HLAR-WEB-${captureId.slice(-8)}`;
 
 type ReceiptInput = {
   captureId: string;
@@ -108,9 +106,9 @@ type ReceiptInput = {
 
 // A paid invoice carrying the PayPal capture id: the donor's receipt and the dashboard's record of
 // the gift. A failure here must not fail the donation, which has already been captured.
-async function recordReceipt(gift: ReceiptInput): Promise<string> {
+async function recordReceipt(gift: ReceiptInput): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
-  const receiptNumber = `HLAR-WEB-${gift.captureId.slice(-8)}`;
+  const receiptNumber = receiptNumberFor(gift.captureId);
   try {
     const invoice = await post<{ id?: string; href?: string }>('/v2/invoicing/invoices', {
       detail: {
@@ -143,5 +141,4 @@ async function recordReceipt(gift: ReceiptInput): Promise<string> {
   } catch (error) {
     console.error('[donations] receipt not recorded for capture', gift.captureId, error);
   }
-  return receiptNumber;
 }

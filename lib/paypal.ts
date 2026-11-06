@@ -217,9 +217,20 @@ export async function listInvoices(): Promise<Invoice[]> {
   );
 }
 
-/** How many invoices the account has: one cheap call, to notice a new gift without re-reading them all. */
+/** How many invoices the account has. */
 export async function countInvoices(): Promise<number> {
   const { total_items = 0 } = await get<{ total_items?: number }>('/v2/invoicing/invoices?page=1&page_size=1&total_required=true');
+  return total_items;
+}
+
+/**
+ * How many invoices are paid: one cheap call, to notice a new gift without re-reading them all. A
+ * receipt is created, sent and then marked paid, and only that last step means the gift is in.
+ */
+export async function countPaidInvoices(): Promise<number> {
+  const { total_items = 0 } = await post<{ total_items?: number }>('/v2/invoicing/search-invoices?page=1&page_size=1&total_required=true', {
+    status: ['PAID', 'MARKED_AS_PAID'],
+  });
   return total_items;
 }
 
