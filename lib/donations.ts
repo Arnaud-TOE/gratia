@@ -3,7 +3,13 @@
 // the dashboard straight away (Transaction Search can take hours to list a new payment) and in the
 // donor's giving history next to their pledges.
 
-import { CheckoutPaymentIntent, OrderStatus } from '@paypal/paypal-server-sdk';
+import {
+  CheckoutPaymentIntent,
+  ItemCategory,
+  OrderStatus,
+  PaypalExperienceUserAction,
+  PaypalWalletContextShippingPreference,
+} from '@paypal/paypal-server-sdk';
 import { ORGANIZATION } from './organization';
 import { post } from './paypal';
 import { ordersApi } from './paypal-sdk';
@@ -31,16 +37,29 @@ export function parseDonation(input: unknown): DonationRequest | { error: string
 }
 
 export async function createDonationOrder({ amount, campaign }: DonationRequest): Promise<string> {
+  const value = amount.toFixed(2);
   const { result } = await ordersApi().createOrder({
     body: {
       intent: CheckoutPaymentIntent.Capture,
       purchaseUnits: [
         {
-          amount: { currencyCode: 'USD', value: amount.toFixed(2) },
+          amount: { currencyCode: 'USD', value, breakdown: { itemTotal: { currencyCode: 'USD', value } } },
           description: campaign,
           softDescriptor: 'HARBORLANE',
+          items: [{ name: campaign, quantity: '1', category: ItemCategory.Donation, unitAmount: { currencyCode: 'USD', value } }],
         },
       ],
+      // A gift, not a purchase: nothing to ship, PayPal's page names the rescue, and the donor
+      // confirms the gift there rather than coming back to a review step.
+      paymentSource: {
+        paypal: {
+          experienceContext: {
+            brandName: ORGANIZATION,
+            shippingPreference: PaypalWalletContextShippingPreference.NoShipping,
+            userAction: PaypalExperienceUserAction.PayNow,
+          },
+        },
+      },
     },
     prefer: 'return=minimal',
   });
