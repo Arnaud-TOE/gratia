@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "seed": "node --env-file=.env.local scripts/seed-demo-data.mjs",
     "simulate-gift": "node --env-file=.env.local scripts/simulate-gift.mjs"
