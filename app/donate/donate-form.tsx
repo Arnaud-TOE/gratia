@@ -202,7 +202,7 @@ export function DonateForm({ clientId, campaigns }: { clientId: string; campaign
       </label>
 
       <div className="mt-8" aria-busy={busy}>
-        <paypal-button ref={buttonRef} type="donate" hidden />
+        <paypal-button ref={buttonRef} type="donate" hidden className="block w-full" />
         {status.kind === 'loading' && <p className="text-center text-sm text-hl-muted">Loading PayPal…</p>}
         {status.kind === 'processing' && <p className="text-center text-sm text-hl-muted">Completing your gift…</p>}
         {status.kind === 'error' && (

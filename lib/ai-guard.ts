@@ -49,14 +49,3 @@ export function aiCallAllowed(request: Request): Verdict {
   return { allowed: true };
 }
 
-/** Whether the request comes from a page of this site. Browsers always send Origin on a POST. */
-export function isSameOrigin(request: Request): boolean {
-  const origin = request.headers.get('origin');
-  if (!origin) return false;
-  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    return false;
-  }
-}

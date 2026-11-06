@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CallLimiter, isSameOrigin } from '@/lib/ai-guard';
+import { CallLimiter } from '@/lib/ai-guard';
+import { isSameOrigin } from '@/lib/same-origin';
 
 describe('CallLimiter', () => {
   it('allows calls up to the limit, then refuses', () => {

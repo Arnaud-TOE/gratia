@@ -1,4 +1,5 @@
 import { getInvoice, PayPalApiError, post } from '@/lib/paypal';
+import { isSameOrigin } from '@/lib/same-origin';
 
 // Sends a pledge reminder through PayPal Invoicing: PayPal emails the donor with the note and a
 // link to pay. The agent calls this only after the user approved the exact message in the
@@ -10,6 +11,8 @@ const COOLDOWN_MS = 10 * 60_000;
 const lastSent = new Map<string, number>();
 
 export async function POST(request: Request, { params }: RouteContext<'/api/pledges/[invoiceId]/remind'>) {
+  if (!isSameOrigin(request)) return Response.json({ error: 'This endpoint only serves the Gratia dashboard.' }, { status: 403 });
+
   const { invoiceId } = await params;
   if (!/^INV2(-[A-Z0-9]{4}){4}$/.test(invoiceId)) {
     return Response.json({ error: 'Invalid invoice id.' }, { status: 400 });

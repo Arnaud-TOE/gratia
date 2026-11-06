@@ -19,13 +19,12 @@ const features = [
   },
 ];
 
-// One page per PayPal endpoint the dashboard reads, each in app/(endpoints).
-const endpoints = [
-  { href: '/invoices', label: 'Gifts & pledges', detail: 'GET /v2/invoicing/invoices' },
-  { href: '/transactions', label: 'PayPal ledger', detail: 'GET /v1/reporting/transactions' },
-  { href: '/products', label: 'Programs', detail: 'GET /v1/catalogs/products' },
-  { href: '/plans', label: 'Giving plans', detail: 'GET /v1/billing/plans' },
-  { href: '/balances', label: 'Balances', detail: 'GET /v1/reporting/balances' },
+const stack = [
+  { label: 'Donations', detail: 'PayPal JavaScript SDK v6, Orders v2 through the PayPal Server SDK' },
+  { label: 'Gifts, pledges, reminders', detail: 'PayPal Invoicing v2' },
+  { label: 'Ledger and balance', detail: 'PayPal Transaction Search and Balances' },
+  { label: 'Dashboard and agents', detail: 'AG Studio, with custom widgets and a custom agent' },
+  { label: 'Model', detail: 'OpenAI GPT-5.4 mini, behind a server proxy' },
 ];
 
 export default function Home() {
@@ -39,7 +38,7 @@ export default function Home() {
         The AI development director for small nonprofits.
       </h1>
       <p className="mt-5 max-w-2xl text-lg leading-relaxed text-pp-muted">
-        Four out of five first-time donors never give again. {PRODUCT} turns a nonprofit&apos;s PayPal donations into
+        Four out of five first-time donors don&apos;t come back the next year. {PRODUCT} turns a nonprofit&apos;s PayPal donations into
         a live dashboard and an AI teammate that keeps donors close, built here for {ORGANIZATION}, a fictional
         shelter running on the PayPal sandbox.
       </p>
@@ -61,14 +60,12 @@ export default function Home() {
         ))}
       </ul>
 
-      <h2 className="mt-14 text-sm font-semibold uppercase tracking-wider text-pp-muted">Under the hood: the PayPal data it reads</h2>
+      <h2 className="mt-14 text-sm font-semibold uppercase tracking-wider text-pp-muted">Under the hood</h2>
       <ul className="mt-2 divide-y divide-pp-border border-y border-pp-border">
-        {endpoints.map((page) => (
-          <li key={page.href}>
-            <Link href={page.href} className="flex items-baseline justify-between gap-4 py-3 hover:text-pp-blue">
-              <span className="font-semibold">{page.label} →</span>
-              <code className="text-sm text-pp-muted">{page.detail}</code>
-            </Link>
+        {stack.map((part) => (
+          <li key={part.label} className="flex flex-wrap items-baseline justify-between gap-x-4 py-3">
+            <span className="font-semibold">{part.label}</span>
+            <span className="text-sm text-pp-muted">{part.detail}</span>
           </li>
         ))}
       </ul>

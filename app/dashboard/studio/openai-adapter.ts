@@ -27,6 +27,7 @@ import type {
     AgLlmResponseHandler,
     AgLlmTextFormat,
 } from 'ag-studio';
+import { BUDGET_USED_UP, isOutOfCredit } from '@/lib/ai-messages';
 
 // =============================================================================
 // OpenAI Types (hand-written, minimal)
@@ -513,7 +514,9 @@ class ResponseStreamTranslator {
                 // The Responses API nests the details under `error` (e.g. insufficient_quota when the
                 // account has no credit); older payloads put them at the top level.
                 const { code, message } = input.error ?? input;
-                outcome.error ??= new Error(`${code ?? 'api_error'}: ${message ?? 'the model request failed'}`);
+                outcome.error ??= new Error(
+                    isOutOfCredit(code) ? BUDGET_USED_UP : `${code ?? 'api_error'}: ${message ?? 'the model request failed'}`
+                );
                 return [];
             }
             default:

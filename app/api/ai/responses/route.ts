@@ -1,5 +1,7 @@
 import { aiModels, openAiKey } from '@/lib/ai';
-import { aiCallAllowed, isSameOrigin } from '@/lib/ai-guard';
+import { aiCallAllowed } from '@/lib/ai-guard';
+import { BUDGET_USED_UP, isOutOfCredit } from '@/lib/ai-messages';
+import { isSameOrigin } from '@/lib/same-origin';
 
 // Proxy for AG Studio's OpenAI adapter (app/dashboard/studio/openai-adapter.ts). The adapter
 // runs in the browser and POSTs to `${endpoint}/responses`; with its endpoint set to /api/ai it lands
@@ -47,7 +49,14 @@ export async function POST(request: Request) {
     signal: request.signal,
   });
 
-  // Errors come back as JSON and the adapter reads `error.message` from them; success is an SSE stream.
+  if (!upstream.ok) {
+    // Errors come back as JSON and the adapter reads `error.message` from them.
+    const detail = (await upstream.json().catch(() => ({}))) as { error?: { code?: string; message?: string } };
+    if (isOutOfCredit(detail.error?.code)) return error(429, BUDGET_USED_UP);
+    return error(upstream.status, detail.error?.message ?? `The model request failed (HTTP ${upstream.status}).`);
+  }
+
+  // Success is an SSE stream.
   return new Response(upstream.body, {
     status: upstream.status,
     headers: {
