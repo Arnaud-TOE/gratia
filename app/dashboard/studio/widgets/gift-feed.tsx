@@ -12,7 +12,7 @@ import { dayOf, useWidgetRows } from './use-widget-rows';
 const MAX_GIFTS = 6;
 const DAY_MS = 86_400_000;
 
-type Mapping = { donor?: AgWidgetField[]; date?: AgWidgetField[]; amount?: AgWidgetField[]; program?: AgWidgetField[] };
+type Mapping = { donor?: AgWidgetField[]; date?: AgWidgetField[]; amount?: AgWidgetField[]; program?: AgWidgetField[]; gift?: AgWidgetField[] };
 
 type Gift = { key: string; donor: string; day: string; amount: number; program: string | null };
 
@@ -37,12 +37,14 @@ function GiftFeed({ widgetApi, dataMapping }: AgWidgetParams) {
   const date = mapping.date?.[0];
   const amount = mapping.amount?.[0];
   const program = mapping.program?.[0];
+  // Fields group the query, so without this two gifts from one donor on one day would merge.
+  const giftId = mapping.gift?.[0];
 
   const rows = useWidgetRows(
     widgetApi,
     donor && date && amount
       ? {
-          fields: program ? [donor, date, amount, program] : [donor, date, amount],
+          fields: [donor, date, amount, ...(program ? [program] : []), ...(giftId ? [giftId] : [])],
           sort: [{ field: date, direction: 'desc' }],
           // Refunds come back too, and are dropped below.
           limit: { count: MAX_GIFTS * 3 },
@@ -59,12 +61,13 @@ function GiftFeed({ widgetApi, dataMapping }: AgWidgetParams) {
         if (!day || given <= 0) return [];
         const name = String(row[donor.key] ?? 'Anonymous');
         const purpose = program ? (row[program.key] as string | null | undefined) : null;
-        return [{ key: `${name}|${day}|${given}|${purpose ?? ''}`, donor: name, day, amount: given, program: purpose ?? null }];
+        const key = giftId ? String(row[giftId.key]) : `${name}|${day}|${given}|${purpose ?? ''}`;
+        return [{ key, donor: name, day, amount: given, program: purpose ?? null }];
       })
       .slice(0, MAX_GIFTS);
     // The field objects are rebuilt on every render; their keys don't change with them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, donor?.key, date?.key, amount?.key, program?.key]);
+  }, [rows, donor?.key, date?.key, amount?.key, program?.key, giftId?.key]);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -147,6 +150,11 @@ export const giftFeedDefinition: AgWidgetDefinition<'gift-feed'> = {
       supportedRoles: ['category'],
       aiDescription: 'Optional: what the gift was for, e.g. Gift Payments > Gift Program.',
     },
+    gift: {
+      type: 'field',
+      supportedRoles: ['category'],
+      aiDescription: 'Optional: an id unique to each gift, so two gifts from one donor on one day stay separate, e.g. the field invoicePayments.id.',
+    },
   },
   form: (params) =>
     params.createDefaults({
@@ -155,6 +163,7 @@ export const giftFeedDefinition: AgWidgetDefinition<'gift-feed'> = {
         { key: 'date', label: 'Gift date' },
         { key: 'amount', label: 'Amount given' },
         { key: 'program', label: 'Program' },
+        { key: 'gift', label: 'Gift id' },
       ],
     }),
   comp: GiftFeed,

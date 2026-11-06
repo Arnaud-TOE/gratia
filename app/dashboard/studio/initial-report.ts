@@ -142,6 +142,7 @@ const revenue: AgPageState = {
         date: [{ id: 'invoicePayments.date' }],
         amount: [sum('invoicePayments.signedAmount')],
         program: [{ id: 'invoicePayments.program' }],
+        gift: [{ id: 'invoicePayments.id' }],
       },
       format: title('Latest gifts'),
     }),
