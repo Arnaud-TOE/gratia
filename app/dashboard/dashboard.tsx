@@ -10,7 +10,7 @@
 // Nothing tracks edits as they happen. Save reads the report from Studio with getState(), and
 // leaving a report compares Studio's state with the saved one there and then.
 
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   AgStudioAiModule,
   enableStudioDevValidations,
@@ -30,6 +30,7 @@ import {
   type DashboardDialog,
 } from './components/dialogs';
 import { EmptyData } from './components/empty-data';
+import { GiftToast } from './components/gift-toast';
 import { ReportHeader } from './components/report-header';
 import {
   blankReport,
@@ -50,6 +51,7 @@ import { buildAi } from './studio/ai';
 import { buildStudioData, hasData } from './studio/data';
 import { agStudioPayPalTheme } from './studio/theme';
 import { gratiaWidgets, type GratiaRegistry } from './studio/widgets';
+import { useLiveGifts } from './use-live-gifts';
 import { useReports } from './use-reports';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -68,6 +70,17 @@ type StudioHistory = { canUndo: boolean; canRedo: boolean };
 const NO_HISTORY: StudioHistory = { canUndo: false, canRedo: false };
 
 const noSubscription = () => () => {};
+
+// For things built once that need the current value later, like the agent's tools.
+function latestValue<T>(initial: T) {
+  let value = initial;
+  return {
+    get: () => value,
+    set: (next: T) => {
+      value = next;
+    },
+  };
+}
 
 export function Dashboard(props: DashboardProps) {
   // Saved reports live in localStorage, which only exists in the browser.
@@ -100,10 +113,14 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
   const studioData = useMemo(() => buildStudioData(data), [data]);
   // The agent asks here before PayPal sends anything on the rescue's behalf.
   const { requestApproval, approvalDialog } = useApprovals();
+  // A gift made anywhere reaches this page within seconds, and the agent's tools read the latest data.
+  const { arrival, dismissArrival } = useLiveGifts(data);
+  const [latestData] = useState(() => latestValue(data));
+  useEffect(() => latestData.set(data), [latestData, data]);
   // `ai` is read once, when Studio is created.
   const ai = useMemo(
-    () => (aiModels?.length ? buildAi(aiModels, data, requestApproval) : undefined),
-    [aiModels, data, requestApproval],
+    () => (aiModels?.length ? buildAi(aiModels, latestData.get, requestApproval) : undefined),
+    [aiModels, latestData, requestApproval],
   );
 
   // --- Driving Studio ---------------------------------------------------------------
@@ -336,6 +353,7 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
         }}
       />
       {approvalDialog}
+      {arrival && <GiftToast gift={arrival} onDismiss={dismissArrival} />}
     </AppShell>
   );
 }

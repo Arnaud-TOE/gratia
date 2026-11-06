@@ -161,6 +161,7 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
           ['date', 'Payment Date', 'dateFormat'],
           ['amount', 'Payment Amount', 'currencyFormat'],
           ['signedAmount', 'Net Cash', 'currencyFormat'],
+          ['program', 'Gift Program', 'textFormat'],
         ]),
       },
       {

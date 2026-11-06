@@ -201,6 +201,12 @@ export async function listInvoices(): Promise<Invoice[]> {
   return Promise.all(summaries.map((i) => get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(i.id)}`)));
 }
 
+/** How many invoices the account has: one cheap call, to notice a new gift without re-reading them all. */
+export async function countInvoices(): Promise<number> {
+  const { total_items = 0 } = await get<{ total_items?: number }>('/v2/invoicing/invoices?page=1&page_size=1&total_required=true');
+  return total_items;
+}
+
 // --- Transaction Search & balances -------------------------------------------------
 
 export type Transaction = {

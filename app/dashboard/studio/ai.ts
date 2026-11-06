@@ -47,19 +47,19 @@ Style: plain, warm and brief. Use USD. Today is ${today}.`;
 
 // `models` are the ids allowed by OPENAI_MODELS on the server; the first is the default, and the
 // picker only shows for two or more.
-export function buildAi(models: string[], data: DashboardData, requestApproval: RequestApproval): AgAiHarnessSetup {
+export function buildAi(models: string[], getData: () => DashboardData, requestApproval: RequestApproval): AgAiHarnessSetup {
   const adapter = openaiAdapter({ endpoint: '/api/ai', model: models[0] });
 
   return ({ api }) =>
     createAiHarness(api, ({ tools, builtIn }) => {
-      const donorTools = buildDonorTools(api, data, requestApproval);
+      const donorTools = buildDonorTools(api, getData, requestApproval);
       const director = directLlmRunner({
         id: 'director',
         name: 'Development Director',
         description: 'Fronts the conversation: donor follow-up, pledge reminders through PayPal, and briefs for dashboard changes.',
         adapter,
         maxTurns: 40,
-        instructions: () => directorInstructions(data),
+        instructions: () => directorInstructions(getData()),
         tools: () => [
           tools.renameThread(),
           tools.delegateTo(['lead']),

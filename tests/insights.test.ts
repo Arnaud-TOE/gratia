@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DashboardData } from '@/lib/dashboard-data';
-import { donorsAtRisk, overduePledges } from '@/lib/insights';
+import { donorsAtRisk, giftsSince, overduePledges } from '@/lib/insights';
 
 type Row<K extends keyof DashboardData> = DashboardData[K] extends (infer T)[] ? T : never;
 
@@ -55,7 +55,7 @@ function gift(customerId: string, daysBack: number, amount: number, n: number) {
   const id = `${customerId}-${n}`;
   return {
     invoice: invoice(id, customerId),
-    payment: { id: `${id}-p`, invoiceId: id, kind: 'Payment', method: 'Check', date: daysAgo(daysBack), amount, signedAmount: amount },
+    payment: { id: `${id}-p`, invoiceId: id, kind: 'Payment', method: 'Check', date: daysAgo(daysBack), amount, signedAmount: amount, program: 'Medical Fund' },
   };
 }
 
@@ -108,5 +108,23 @@ describe('overduePledges', () => {
       ['INV-2', 'Riverside Hardware Co.', 2500],
       ['INV-1', 'Bluebell Bakery', 1200],
     ]);
+  });
+});
+
+describe('giftsSince', () => {
+  const customers = [{ id: 'a', name: 'Ana Reyes', company: 'Individual', email: 'a@example.com' }];
+  const gifts = [gift('a', 3, 25, 1), gift('a', 0, 50, 2)];
+
+  it('returns only the gifts whose payment is not known yet', () => {
+    const known = new Set(['a-1-p']);
+    expect(giftsSince(known, withGifts(customers, gifts))).toEqual([
+      { id: 'a-2-p', donor: 'Ana Reyes', amount: 50, program: 'Medical Fund' },
+    ]);
+  });
+
+  it('ignores refunds', () => {
+    const refund = gift('a', 0, 50, 3);
+    refund.payment.kind = 'Refund';
+    expect(giftsSince(new Set(['a-1-p', 'a-2-p']), withGifts(customers, [...gifts, refund]))).toEqual([]);
   });
 });

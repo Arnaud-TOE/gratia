@@ -18,7 +18,7 @@ export type SavedReport = {
 
 export type StoredReports = { reports: SavedReport[]; activeId: string };
 
-const STORAGE_KEY = 'gratia:reports:v1';
+const STORAGE_KEY = 'gratia:reports:v2';
 
 export const BUILT_IN_ID = 'paypal-overview';
 

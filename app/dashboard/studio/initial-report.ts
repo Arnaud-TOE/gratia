@@ -17,6 +17,11 @@ const sum = (id: string) => ({ id, aggregation: 'sum' as const });
 const avg = (id: string) => ({ id, aggregation: 'avg' as const });
 const countd = (id: string) => ({ id, aggregation: 'countd' as const });
 
+// Studio's state types list only the built-in widget types, so our custom widgets (./widgets) are
+// cast in; Studio itself resolves them from the registered widgets.
+const custom = (widget: { type: string; dataMapping: unknown; format: unknown }) =>
+  widget as unknown as NonNullable<NonNullable<AgPageState['widgets']>[string]>;
+
 // Same stack as --pp-font in app/globals.css.
 const PAYPAL_FONT = '"PayPal Open", "Helvetica Neue", Helvetica, Arial, sans-serif';
 
@@ -138,9 +143,26 @@ const revenue: AgPageState = {
         },
       },
     },
-    // Our custom widget (./widgets/donor-wall). Studio's state types list only the built-in
-    // widget types, so it is cast in; Studio itself resolves it from the registered widgets.
-    'donor-wall': {
+    'gift-feed': custom({
+      type: 'gift-feed',
+      dataMapping: {
+        donor: [{ id: 'customers.name' }],
+        date: [{ id: 'invoicePayments.date' }],
+        amount: [sum('invoicePayments.signedAmount')],
+        program: [{ id: 'invoicePayments.program' }],
+      },
+      format: title('Latest gifts'),
+    }),
+    'loyalty-heatmap': custom({
+      type: 'loyalty-heatmap',
+      dataMapping: {
+        donor: [{ id: 'customers.name' }],
+        date: [{ id: 'invoicePayments.date' }],
+        amount: [sum('invoicePayments.signedAmount')],
+      },
+      format: title('Who keeps coming back'),
+    }),
+    'donor-wall': custom({
       type: 'donor-wall',
       dataMapping: {
         donor: [{ id: 'customers.name' }],
@@ -148,7 +170,7 @@ const revenue: AgPageState = {
         gifts: [countd('invoicePayments.id')],
       },
       format: title('Donor wall: thank you!'),
-    } as unknown as NonNullable<NonNullable<AgPageState['widgets']>[string]>,
+    }),
     'invoice-status-pivot': {
       type: 'pivot-grid',
       dataMapping: {
@@ -166,18 +188,20 @@ const revenue: AgPageState = {
     },
   },
   widgetLayout: {
-    'kpi-invoiced': at(0, 0, 4, 7),
-    'kpi-collected': at(4, 0, 4, 7),
-    'kpi-outstanding': at(8, 0, 4, 7),
-    'kpi-overdue': at(12, 0, 4, 7),
-    'invoice-date': at(16, 0, 8, 7),
-    'billed-vs-collected': at(0, 7, 16, 16),
-    'collection-rate': at(16, 7, 8, 16),
-    'status-sunburst': at(0, 23, 8, 18),
-    'items-treemap': at(8, 23, 8, 18),
-    'payment-methods': at(16, 23, 8, 18),
-    'donor-wall': at(0, 41, 8, 24),
-    'invoice-status-pivot': at(8, 41, 16, 24),
+    'kpi-invoiced': at(0, 0, 4, 8),
+    'kpi-collected': at(4, 0, 4, 8),
+    'kpi-outstanding': at(8, 0, 4, 8),
+    'kpi-overdue': at(12, 0, 4, 8),
+    'invoice-date': at(16, 0, 8, 8),
+    'gift-feed': at(0, 8, 8, 22),
+    'loyalty-heatmap': at(8, 8, 16, 22),
+    'donor-wall': at(0, 30, 8, 24),
+    'billed-vs-collected': at(8, 30, 16, 24),
+    'collection-rate': at(0, 54, 8, 18),
+    'items-treemap': at(8, 54, 8, 18),
+    'status-sunburst': at(16, 54, 8, 18),
+    'payment-methods': at(0, 72, 8, 24),
+    'invoice-status-pivot': at(8, 72, 16, 24),
   },
 };
 

@@ -7,7 +7,7 @@ import type { DashboardData } from '@/lib/dashboard-data';
 import { donorsAtRisk, overduePledges } from '@/lib/insights';
 import type { RequestApproval } from '../components/approval-dialog';
 
-export function buildDonorTools(api: AgStudioApi, data: DashboardData, requestApproval: RequestApproval): AgAiTool[] {
+export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, requestApproval: RequestApproval): AgAiTool[] {
   const findDonorsAtRisk = api.defineAiTool({
     name: 'find_donors_at_risk',
     description:
@@ -18,7 +18,7 @@ export function buildDonorTools(api: AgStudioApi, data: DashboardData, requestAp
         limit: s.number({ description: 'How many donors to return (default 8).' }).optional(),
       }),
     execute: ({ limit }, ctx) => {
-      const donors = donorsAtRisk(data).slice(0, limit ?? 8);
+      const donors = donorsAtRisk(getData()).slice(0, limit ?? 8);
       if (donors.length === 0) return ctx.success('No donors look at risk right now.', []);
       return ctx.success(`${donors.length} donors at risk, most given first.`, donors);
     },
@@ -31,7 +31,7 @@ export function buildDonorTools(api: AgStudioApi, data: DashboardData, requestAp
       'outstanding amount first. Each has the invoiceId needed to send a reminder.',
     params: (s) => s.object({}),
     execute: (_args, ctx) => {
-      const pledges = overduePledges(data);
+      const pledges = overduePledges(getData());
       if (pledges.length === 0) return ctx.success('No pledges are overdue.', []);
       return ctx.success(`${pledges.length} overdue pledges.`, pledges);
     },
@@ -50,7 +50,7 @@ export function buildDonorTools(api: AgStudioApi, data: DashboardData, requestAp
         note: s.string({ description: 'The personal note PayPal includes in the reminder email.' }),
       }),
     execute: async ({ invoiceId, subject, note }, ctx) => {
-      const pledge = overduePledges(data).find((p) => p.invoiceId === invoiceId);
+      const pledge = overduePledges(getData()).find((p) => p.invoiceId === invoiceId);
       if (!pledge) return ctx.error(`No overdue pledge has invoiceId ${invoiceId}. Call list_overdue_pledges first.`);
 
       const approved = await requestApproval({

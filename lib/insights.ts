@@ -114,3 +114,22 @@ export function overduePledges(data: DashboardData): OverduePledge[] {
     })
     .sort((a, b) => b.outstanding - a.outstanding);
 }
+
+export type NewGift = { id: string; donor: string; amount: number; program: string | null };
+
+/** Gifts in `data` whose payment id isn't in `known`: what has come in since the last read. */
+export function giftsSince(known: ReadonlySet<string>, data: DashboardData): NewGift[] {
+  const invoices = new Map(data.invoices.map((invoice) => [invoice.id, invoice]));
+  const donors = new Map(data.customers.map((donor) => [donor.id, donor.name]));
+  return data.invoicePayments
+    .filter((payment) => payment.kind === 'Payment' && !known.has(payment.id))
+    .map((payment) => {
+      const invoice = invoices.get(payment.invoiceId);
+      return {
+        id: payment.id,
+        donor: (invoice && donors.get(invoice.customerId)) ?? 'A donor',
+        amount: payment.amount,
+        program: payment.program,
+      };
+    });
+}

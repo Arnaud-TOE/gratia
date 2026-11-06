@@ -3,11 +3,13 @@
 // The donor wall: a custom AG Studio widget that ranks donors by what they have given, styled as a
 // thank-you board rather than a ledger. AG Studio ships gauges, grids and charts but no
 // leaderboard, so this one is ours. It reads through the widget API like a built-in widget, so
-// page, date and cross filters all apply, and it carries AI metadata so the agents can place it.
+// page, date and cross filters all apply; clicking a donor filters the rest of the page to them;
+// and it carries AI metadata so the agents can place it.
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import type { AgWidgetField, AgWidgetParams } from 'ag-studio';
 import type { AgWidgetDefinition } from 'ag-studio-react';
+import { useWidgetRows } from './use-widget-rows';
 
 const MAX_ROWS = 8;
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -21,51 +23,46 @@ function DonorWall({ widgetApi, dataMapping }: AgWidgetParams) {
   const donor = mapping.donor?.[0];
   const amount = mapping.amount?.[0];
   const gifts = mapping.gifts?.[0];
-  const [entries, setEntries] = useState<Entry[]>([]);
 
-  // Studio hands over new field objects on every render; only a different field should refetch.
-  const fieldsKey = [donor, amount, gifts].map((f) => (f ? `${f.fieldId}:${f.aggregation ?? ''}` : '-')).join('|');
-
-  useEffect(() => {
-    if (!donor || !amount) {
-      widgetApi.setDisplayState('incompleteDataMapping');
-      return;
-    }
-    const controller = new AbortController();
-    widgetApi.setDisplayState('loading', { prominent: false });
-    widgetApi
-      .getData(
-        {
+  const rows = useWidgetRows(
+    widgetApi,
+    donor && amount
+      ? {
           fields: gifts ? [donor, amount, gifts] : [donor, amount],
           sort: [{ field: amount, direction: 'desc' }],
           limit: { count: MAX_ROWS },
-        },
-        { signal: controller.signal },
-      )
-      .then(({ results }) => {
-        const rows = results.rows
-          .map((row) => ({
-            name: String(row[donor.key] ?? 'Anonymous'),
-            amount: Number(row[amount.key] ?? 0),
-            gifts: gifts ? Number(row[gifts.key] ?? 0) : null,
-          }))
-          .filter((entry) => entry.amount > 0);
-        setEntries(rows);
-        widgetApi.setDisplayState(rows.length > 0 ? 'displayed' : 'noData');
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) widgetApi.setDisplayState('noData');
-      });
-    return () => controller.abort();
-    // fieldsKey stands in for donor, amount and gifts (see above).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [widgetApi, fieldsKey]);
+        }
+      : null,
+  );
 
+  const entries = useMemo<Entry[]>(() => {
+    if (!donor || !amount) return [];
+    return rows
+      .map((row) => ({
+        name: String(row[donor.key] ?? 'Anonymous'),
+        amount: Number(row[amount.key] ?? 0),
+        gifts: gifts ? Number(row[gifts.key] ?? 0) : null,
+      }))
+      .filter((entry) => entry.amount > 0);
+    // The field objects are rebuilt on every render; their keys don't change with them.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, donor?.key, amount?.key, gifts?.key]);
+
+  const selected = new Set(
+    widgetApi.getCrossFilterSelections()?.flatMap((selection) => (selection.type === 'value' ? selection.values.map(String) : [])) ?? [],
+  );
   const top = entries[0]?.amount || 1;
   return (
     <ol className="flex h-full flex-col gap-2 overflow-auto px-1 py-1">
       {entries.map((entry, i) => (
-        <li key={entry.name} className="flex items-center gap-3 rounded-xl bg-pp-canvas px-3 py-2">
+        <li
+          key={entry.name}
+          title={`Show only ${entry.name}`}
+          onClick={() => donor && widgetApi.toggleCrossFilter({ type: 'value', group: 0, field: donor, value: entry.name })}
+          className={`flex cursor-pointer items-center gap-3 rounded-xl bg-pp-canvas px-3 py-2 hover:bg-pp-highlight ${
+            selected.has(entry.name) ? 'ring-2 ring-pp-blue' : ''
+          }`}
+        >
           <span className="w-7 shrink-0 text-center text-lg" aria-label={`Rank ${i + 1}`}>
             {MEDALS[i] ?? <span className="text-sm font-semibold text-pp-muted">{i + 1}</span>}
           </span>

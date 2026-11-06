@@ -82,3 +82,19 @@ body {
   --color-hl-muted: var(--hl-muted);
   --color-hl-border: var(--hl-border);
 }
+
+/* The gift feed's newest row, and the toast for a gift that has just come in. */
+@keyframes gift-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.gift-arrived {
+  animation: gift-arrive 500ms ease-out;
+}

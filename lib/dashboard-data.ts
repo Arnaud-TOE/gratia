@@ -154,6 +154,7 @@ function invoicePaymentRows(invoices: Invoice[]) {
       date: t.payment_date ?? null,
       amount: amountOf(t.amount),
       signedAmount: amountOf(t.amount),
+      program: inv.items?.[0]?.name ?? null,
     })),
     ...(inv.refunds?.transactions ?? []).map((t, i) => ({
       id: t.recipient_transaction_id ?? `${inv.id}-refund-${i + 1}`,
@@ -163,6 +164,7 @@ function invoicePaymentRows(invoices: Invoice[]) {
       date: t.refund_date ?? null,
       amount: amountOf(t.amount),
       signedAmount: -amountOf(t.amount),
+      program: inv.items?.[0]?.name ?? null,
     })),
   ]);
 }

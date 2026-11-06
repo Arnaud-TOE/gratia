@@ -1,4 +1,5 @@
 import { aiModels, openAiKey } from '@/lib/ai';
+import { aiCallAllowed, isSameOrigin } from '@/lib/ai-guard';
 
 // Proxy for AG Studio's OpenAI adapter (app/dashboard/studio/openai-adapter.ts). The adapter
 // runs in the browser and POSTs to `${endpoint}/responses`; with its endpoint set to /api/ai it lands
@@ -8,14 +9,20 @@ import { aiModels, openAiKey } from '@/lib/ai';
 
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 
-// Bounds the cost of a single turn, whatever the client asks for. Reasoning tokens count towards it.
-const MAX_OUTPUT_TOKENS = 32_000;
+// Bounds the cost of a single call, whatever the client asks for. Reasoning tokens count towards it.
+const MAX_OUTPUT_TOKENS = 16_000;
 
 const error = (status: number, message: string) => Response.json({ error: { message } }, { status });
 
 export async function POST(request: Request) {
   const apiKey = openAiKey();
   if (!apiKey) return error(503, 'The AI assistant is not configured: set AG_STUDIO_OPENAI_API_KEY in .env.local.');
+
+  // This is a public demo paying for its own model calls: only its own pages may use the proxy,
+  // and only so much of it. The message is shown in the assistant's panel.
+  if (!isSameOrigin(request)) return error(403, 'This endpoint only serves the Gratia dashboard.');
+  const verdict = aiCallAllowed(request);
+  if (!verdict.allowed) return error(429, verdict.message);
 
   let body: Record<string, unknown>;
   try {
