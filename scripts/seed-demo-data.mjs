@@ -178,7 +178,7 @@ function planGifts() {
   // "who is drifting away" story the dashboard and the agent are built around.
   sponsors.forEach((donor, i) => {
     const amount = pick([15, 15, 35, 35, 75]);
-    const startMonth = between(3, 6);
+    const startMonth = between(8, 11);
     const lastMonth = i >= 4 ? between(2, 3) : 0;
     const day = between(1, 20);
     for (let m = startMonth; m >= lastMonth; m--) {

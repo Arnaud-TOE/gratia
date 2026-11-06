@@ -195,10 +195,26 @@ export function getInvoice(id: string): Promise<Invoice> {
   return get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(id)}`);
 }
 
+type InvoiceSummary = Pick<Invoice, 'id' | 'status' | 'due_amount' | 'payments'>;
+
+// What changes on an invoice once it is issued shows in the list, so an invoice whose summary hasn't
+// moved needs no second read. Without this, every refresh costs one PayPal call per invoice.
+const invoiceDetails = new Map<string, { stamp: string; invoice: Invoice }>();
+const stampOf = (s: InvoiceSummary) => [s.status, s.due_amount?.value, s.payments?.paid_amount?.value].join('|');
+
 // The list omits line items, payments and refunds; the detail endpoint has them.
 export async function listInvoices(): Promise<Invoice[]> {
-  const summaries = await listAll<{ id: string }>('/v2/invoicing/invoices?total_required=true', 'items', 100);
-  return Promise.all(summaries.map((i) => get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(i.id)}`)));
+  const summaries = await listAll<InvoiceSummary>('/v2/invoicing/invoices?total_required=true', 'items', 100);
+  return Promise.all(
+    summaries.map(async (summary) => {
+      const stamp = stampOf(summary);
+      const known = invoiceDetails.get(summary.id);
+      if (known?.stamp === stamp) return known.invoice;
+      const invoice = await get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(summary.id)}`);
+      invoiceDetails.set(summary.id, { stamp, invoice });
+      return invoice;
+    }),
+  );
 }
 
 /** How many invoices the account has: one cheap call, to notice a new gift without re-reading them all. */

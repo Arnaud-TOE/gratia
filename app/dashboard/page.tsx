@@ -4,6 +4,9 @@ import { aiEnabled, aiModels } from "@/lib/ai";
 import { getDashboardData } from "@/lib/dashboard-data";
 import { Dashboard } from "./dashboard";
 
+// Reading PayPal takes a few seconds on a cold start, when no invoice is cached yet.
+export const maxDuration = 60;
+
 export const metadata: Metadata = {
   title: "Dashboard",
 };
