@@ -246,9 +246,12 @@ const campaignOf = (customField?: string) => {
   return campaign ? humanise(campaign) : 'Other';
 };
 
+// This sandbox account has also funded the team's other hackathon demos, which tag what they create.
+const fromAnotherDemo = (customField?: string | null) => Boolean(customField?.startsWith('tinsel:'));
+
 export function transactionRows(transactions: Transaction[]) {
   return transactions
-    .filter(({ transaction_info: t }) => !BOOKKEEPING.has(t.transaction_event_code ?? ''))
+    .filter(({ transaction_info: t }) => !BOOKKEEPING.has(t.transaction_event_code ?? '') && !fromAnotherDemo(t.custom_field))
     .map(({ transaction_info: t, payer_info: p }) => {
     const amt = amountOf(t.transaction_amount);
     const fee = amountOf(t.fee_amount);

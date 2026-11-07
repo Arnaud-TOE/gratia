@@ -16,6 +16,12 @@ const transaction = (code: string, amount: string, fee = '0.00'): Transaction =>
 });
 
 describe('transactionRows', () => {
+  it('leaves out what another demo did on the same sandbox account', () => {
+    const tagged = transaction('T0006', '2.50');
+    tagged.transaction_info.custom_field = 'tinsel:maya';
+    expect(transactionRows([tagged, transaction('T0005', '25.00')]).map((row) => row.received)).toEqual([25]);
+  });
+
   it('does not count money sent through Payouts as a gift', () => {
     expect(transactionRows([transaction('T0001', '-115.00'), transaction('T0005', '25.00')])).toHaveLength(1);
   });
