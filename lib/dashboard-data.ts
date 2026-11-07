@@ -219,7 +219,6 @@ function planRows(plans: Plan[]) {
 
 // PayPal's event codes in a volunteer's words. T00xx are payments; other codes are rare here.
 const EVENT_TYPES: Record<string, string> = {
-  T0001: 'Payout',
   T1106: 'Reversal',
   T1107: 'Refund',
 };
@@ -228,7 +227,8 @@ const eventTypeOf = (code = '') => EVENT_TYPES[code] ?? (code.startsWith('T00') 
 
 // Not gifts or spending: money set aside while a payout is processed (it comes straight back), and
 // the balance the sandbox starts with.
-const BOOKKEEPING = new Set(['T1105', 'T1503', 'T1900']);
+// T0001 is money the account sent out through PayPal Payouts: it isn't a gift, and this sandbox account also funds another demo.
+const BOOKKEEPING = new Set(['T0001', 'T1105', 'T1503', 'T1900']);
 
 const STATUSES: Record<string, string> = {
   S: 'Success',

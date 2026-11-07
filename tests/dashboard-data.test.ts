@@ -16,9 +16,13 @@ const transaction = (code: string, amount: string, fee = '0.00'): Transaction =>
 });
 
 describe('transactionRows', () => {
+  it('does not count money sent through Payouts as a gift', () => {
+    expect(transactionRows([transaction('T0001', '-115.00'), transaction('T0005', '25.00')])).toHaveLength(1);
+  });
+
   it('names the ledger in plain words', () => {
-    const types = transactionRows([transaction('T0005', '25.00'), transaction('T0006', '25.00'), transaction('T1107', '-20.00'), transaction('T0001', '-5.00')]);
-    expect(types.map((row) => row.eventType)).toEqual(['Gift', 'Gift', 'Refund', 'Payout']);
+    const types = transactionRows([transaction('T0005', '25.00'), transaction('T0006', '25.00'), transaction('T1107', '-20.00')]);
+    expect(types.map((row) => row.eventType)).toEqual(['Gift', 'Gift', 'Refund']);
   });
 
   it('leaves out holds and the sandbox opening balance', () => {
