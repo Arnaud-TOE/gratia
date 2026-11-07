@@ -17,7 +17,6 @@ function dataset(parts: Partial<DashboardData>): DashboardData {
     products: [],
     plans: [],
     transactions: [],
-    payouts: [],
     balances: [],
     ...parts,
   };

@@ -198,7 +198,7 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
       {
         id: 'transactions',
         description:
-          'PayPal account ledger from Transaction Search, last 90 days: gifts, refunds and payouts. Amounts are signed (money out is ' +
+          'PayPal account ledger from Transaction Search, last 90 days: gifts and refunds. Amounts are signed (money out is ' +
           'negative); net is amount plus fee. Gifts Received, Refunded and Fees Paid are positive amounts, for summing on their own.',
         data: data.transactions,
         fields: fields([
@@ -221,21 +221,6 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
         ]),
       },
       {
-        id: 'payouts',
-        description: 'Individual payouts sent from the account, as positive USD amounts, grouped into campaigns.',
-        data: data.payouts,
-        fields: fields([
-          ['id', 'Payout ID', 'textFormat', true],
-          ['campaign', 'Campaign', 'textFormat'],
-          ['recipient', 'Recipient', 'textFormat'],
-          ['date', 'Payout Date', 'dateTimeFormat'],
-          ['status', 'Payout Status', 'textFormat'],
-          ['amount', 'Payout Amount', 'currencyFormat'],
-          ['fee', 'Payout Fee', 'cents'],
-          ['note', 'Payout Note', 'textFormat'],
-        ]),
-      },
-      {
         id: 'balances',
         description: 'Current account balance per currency.',
         data: data.balances,
@@ -255,7 +240,6 @@ export function buildStudioData(data: DashboardData): AgDataSourcesDefinition<Gr
       onCalendar('invoices', 'invoiceDate'),
       onCalendar('invoicePayments', 'date'),
       onCalendar('transactions', 'date', 'day'),
-      onCalendar('payouts', 'date', 'day'),
     ],
     calendars: [
       {

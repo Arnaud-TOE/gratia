@@ -20,7 +20,7 @@ import {
 //   invoiceItems.invoiceId     -> invoices.id
 //   invoicePayments.invoiceId  -> invoices.id
 //   plans.productId            -> products.id
-// Invoice, payment, transaction and payout dates also bind to a shared calendar.
+// Invoice, payment and transaction dates also bind to a shared calendar.
 
 const DAY_MS = 86_400_000;
 
@@ -240,12 +240,6 @@ const STATUSES: Record<string, string> = {
 
 const statusOf = (code?: string) => (code ? (STATUSES[code] ?? code) : null);
 
-// Payout custom fields are '<CAMPAIGN>-<yyyy-mm>-<n>', e.g. 'AGGRID-AFFILIATES-2026-09-1'.
-const campaignOf = (customField?: string) => {
-  const campaign = customField?.match(/^AGGRID-([A-Z]+)-/)?.[1];
-  return campaign ? humanise(campaign) : 'Other';
-};
-
 // This sandbox account has also funded the team's other hackathon demos, which tag what they create.
 const fromAnotherDemo = (customField?: string | null) => Boolean(customField?.startsWith('tinsel:'));
 
@@ -278,22 +272,6 @@ export function transactionRows(transactions: Transaction[]) {
   });
 }
 
-// Payouts as positive amounts, so they size treemap tiles and pie slices.
-function payoutRows(transactions: Transaction[]) {
-  return transactions
-    .filter((t) => t.transaction_info.transaction_event_code === 'T0001')
-    .map(({ transaction_info: t, payer_info: p }) => ({
-      id: t.transaction_id,
-      campaign: campaignOf(t.custom_field),
-      recipient: p?.email_address ?? 'Unknown',
-      date: t.transaction_initiation_date ?? null,
-      status: statusOf(t.transaction_status),
-      amount: -amountOf(t.transaction_amount),
-      fee: -amountOf(t.fee_amount),
-      note: t.transaction_note ?? null,
-    }));
-}
-
 function balanceRows({ balances = [] }: Balances) {
   return balances.map((b) => ({
     currency: b.currency,
@@ -318,6 +296,11 @@ async function recentTransactions(asOf: Date): Promise<Transaction[]> {
   return (await Promise.all(windows)).flat();
 }
 
+/** The rows that say who gave what and when, for what doesn't need the whole dashboard. */
+export function givingRows(invoices: Invoice[], today: string) {
+  return { customers: customerRows(invoices), invoices: invoiceRows(invoices, today), invoicePayments: invoicePaymentRows(invoices) };
+}
+
 export async function getDashboardData(asOf = new Date()) {
   const [products, plans, invoices, transactions, balances] = await Promise.all([
     listProducts(),
@@ -337,7 +320,6 @@ export async function getDashboardData(asOf = new Date()) {
     products: productRows(products),
     plans: planRows(plans),
     transactions: transactionRows(transactions),
-    payouts: payoutRows(transactions),
     balances: balanceRows(balances),
   };
 }

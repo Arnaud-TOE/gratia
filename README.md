@@ -37,6 +37,7 @@ shelter, **Harbor Lane Animal Rescue**.
 | Ledger | Transaction Search (three 31-day windows) and Balances | `lib/paypal.ts`, `lib/dashboard-data.ts` |
 | Programs and giving plans | Catalog Products and Billing Plans | `lib/paypal.ts` |
 | Demo data | All of the above, plus sandbox card captures and a refund | `scripts/seed-demo-data.mjs` |
+| Keeping the demo current | Invoicing v2, from a daily **Vercel Cron** job: sponsors who are still giving give again when their month comes round, and someone new gives every other day. All fictional, sandbox only. Sponsors who stopped stay stopped, so the agent still has someone to win back. | `lib/daily-gifts.ts`, `app/api/cron/daily-gifts` |
 
 ## How we use AI
 
