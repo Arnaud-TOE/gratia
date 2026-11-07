@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "seed": "node --env-file=.env.local scripts/seed-demo-data.mjs",
-    "simulate-gift": "node --env-file=.env.local scripts/simulate-gift.mjs"
+    "simulate-gift": "node --env-file=.env.local scripts/simulate-gift.mjs",
+    "prepare": "git config core.hooksPath .githooks || exit 0"
   },
   "dependencies": {
     "@paypal/paypal-server-sdk": "2.5.0",
