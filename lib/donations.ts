@@ -63,6 +63,7 @@ export async function createDonationOrder({ amount, campaign }: DonationRequest)
         },
       },
     },
+    paypalRequestId: `gratia-order-${crypto.randomUUID()}`,
     prefer: 'return=minimal',
   });
   if (!result.id) throw new Error('PayPal returned no order id.');

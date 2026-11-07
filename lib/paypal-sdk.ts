@@ -15,6 +15,15 @@ function sdkClient(): Client {
     clientCredentialsAuthCredentials: { oAuthClientId: id, oAuthClientSecret: secret },
     environment: Environment.Sandbox,
     timeout: 15_000,
+    // The sandbox has bad moments. Both calls in lib/donations.ts carry a PayPal-Request-Id, so sending one again is safe.
+    httpClientOptions: {
+      retryConfig: {
+        maxNumberOfRetries: 2,
+        maximumRetryWaitTime: 10,
+        httpStatusCodesToRetry: [429, 500, 502, 503, 504],
+        httpMethodsToRetry: ['GET', 'POST'],
+      },
+    },
   });
   return client;
 }
