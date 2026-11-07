@@ -2,6 +2,9 @@
 // catalog products, billing plans, invoicing, Transaction Search and balances, with plain
 // fetch and no SDK. Server-side only: it reads the client secret from the environment.
 
+import { unstable_cache } from 'next/cache';
+import { inTurns } from './in-turns';
+
 const BASE_URL = 'https://api-m.sandbox.paypal.com';
 const MAX_ATTEMPTS = 4;
 
@@ -202,19 +205,33 @@ type InvoiceSummary = Pick<Invoice, 'id' | 'status' | 'due_amount' | 'payments'>
 const invoiceDetails = new Map<string, { stamp: string; invoice: Invoice }>();
 const stampOf = (s: InvoiceSummary) => [s.status, s.due_amount?.value, s.payments?.paid_amount?.value].join('|');
 
+// The same idea across cold starts and server instances, in the Next.js data cache: otherwise whoever
+// wakes the site up sets off a call per invoice, and PayPal's sandbox can refuse a burst like that.
+const readInvoice = unstable_cache(
+  ({ id }: { id: string; stamp: string }) => get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(id)}`),
+  ['paypal-invoice'],
+);
+
+const MAX_INVOICE_READS_AT_ONCE = 8;
+
 // The list omits line items, payments and refunds; the detail endpoint has them.
 export async function listInvoices(): Promise<Invoice[]> {
   const summaries = await listAll<InvoiceSummary>('/v2/invoicing/invoices?total_required=true', 'items', 100);
-  return Promise.all(
-    summaries.map(async (summary) => {
-      const stamp = stampOf(summary);
-      const known = invoiceDetails.get(summary.id);
-      if (known?.stamp === stamp) return known.invoice;
-      const invoice = await get<Invoice>(`/v2/invoicing/invoices/${encodeURIComponent(summary.id)}`);
+  const invoices = await inTurns(summaries, MAX_INVOICE_READS_AT_ONCE, async (summary) => {
+    const stamp = stampOf(summary);
+    const known = invoiceDetails.get(summary.id);
+    if (known?.stamp === stamp) return known.invoice;
+    try {
+      const invoice = await readInvoice({ id: summary.id, stamp });
       invoiceDetails.set(summary.id, { stamp, invoice });
       return invoice;
-    }),
-  );
+    } catch (error) {
+      // One invoice PayPal won't give back shouldn't cost the visitor the whole dashboard.
+      console.error('[paypal] could not read invoice', summary.id, error);
+      return known?.invoice ?? null;
+    }
+  });
+  return invoices.filter((invoice) => invoice !== null);
 }
 
 /** How many invoices the account has. */

@@ -288,10 +288,18 @@ const TRANSACTION_WINDOW_MS = TRANSACTION_SEARCH_MAX_DAYS * DAY_MS;
 // about a quarter, enough to keep this autumn's donations on the dashboard through December.
 const TRANSACTION_WINDOWS = 3;
 
+// A part of PayPal having a bad moment leaves its own widgets empty instead of costing the visitor the page.
+function orElse<T>(reading: Promise<T>, fallback: T, what: string): Promise<T> {
+  return reading.catch((error) => {
+    console.error(`[dashboard] could not read ${what}:`, error);
+    return fallback;
+  });
+}
+
 async function recentTransactions(asOf: Date): Promise<Transaction[]> {
   const windows = Array.from({ length: TRANSACTION_WINDOWS }, (_, i) => {
     const end = new Date(asOf.getTime() - i * TRANSACTION_WINDOW_MS);
-    return searchTransactions(new Date(end.getTime() - TRANSACTION_WINDOW_MS), end);
+    return orElse(searchTransactions(new Date(end.getTime() - TRANSACTION_WINDOW_MS), end), [], 'a window of the ledger');
   });
   return (await Promise.all(windows)).flat();
 }
@@ -303,11 +311,11 @@ export function givingRows(invoices: Invoice[], today: string) {
 
 export async function getDashboardData(asOf = new Date()) {
   const [products, plans, invoices, transactions, balances] = await Promise.all([
-    listProducts(),
-    listPlans(),
+    orElse(listProducts(), [], 'the programs'),
+    orElse(listPlans(), [], 'the giving plans'),
     listInvoices(),
     recentTransactions(asOf),
-    getBalances(),
+    orElse(getBalances(), {}, 'the balance'),
   ]);
   const today = asOf.toISOString().slice(0, 10);
 
