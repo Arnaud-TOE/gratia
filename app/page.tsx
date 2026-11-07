@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { GratiaMark } from './dashboard/components/ui/gratia-mark';
 import { ORGANIZATION, PRODUCT } from '@/lib/organization';
@@ -51,6 +52,17 @@ export default function Home() {
         </Link>
       </div>
 
+      <Link href="/dashboard" className="mt-12 block overflow-hidden rounded-2xl border border-pp-border shadow-sm">
+        <Image
+          src="/app.png"
+          width={2880}
+          height={1800}
+          priority
+          sizes="(min-width: 896px) 848px, 100vw"
+          alt="The Giving page of the team dashboard: the latest gifts, who keeps coming back and who has gone quiet"
+        />
+      </Link>
+
       <ul className="mt-14 grid gap-4 sm:grid-cols-3">
         {features.map((feature) => (
           <li key={feature.title} className="rounded-2xl border border-pp-border bg-white p-5">
@@ -69,6 +81,13 @@ export default function Home() {
           </li>
         ))}
       </ul>
+
+      <p className="mt-10 text-sm text-pp-muted">
+        Built for the PayPal AI Hackathon 2026.{' '}
+        <a href="https://github.com/Arnaud-TOE/gratia" className="font-semibold text-pp-blue hover:underline">
+          Source on GitHub
+        </a>
+      </p>
     </main>
   );
 }

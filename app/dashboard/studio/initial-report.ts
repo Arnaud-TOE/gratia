@@ -80,7 +80,10 @@ const revenue: AgPageState = {
       },
       format: {
         ...title('Committed and received by month, with collection rate'),
-        style: { theme: { common: { legend: { enabled: true } } } },
+        style: {
+          theme: { common: { legend: { enabled: true } } },
+          custom: { secondaryValueAxis: { title: { enabled: true, text: 'Collection rate (1 = all of it)' } } },
+        },
       },
     },
     'collection-rate': {
@@ -99,17 +102,6 @@ const revenue: AgPageState = {
         },
       },
     },
-    'status-sunburst': {
-      type: 'sunburst-chart',
-      dataMapping: {
-        categoryKey: [
-          { id: 'invoices.statusGroup' },
-          { id: 'customers.company' },
-        ],
-        valueKey: [sum('invoices.total')],
-      },
-      format: title('Gifts and pledges by status and donor'),
-    },
     'items-treemap': {
       type: 'treemap-chart',
       dataMapping: {
@@ -119,21 +111,13 @@ const revenue: AgPageState = {
       format: title('Giving by program'),
     },
     'payment-methods': {
-      type: 'nightingale-chart',
+      type: 'bar-chart-grouped',
       dataMapping: {
         categoryKey: [{ id: 'invoicePayments.method' }],
-        valueKey: [sum('invoicePayments.amount')],
+        valueKey: [sum('invoicePayments.signedAmount')],
       },
-      format: {
-        ...title('Gifts by payment method'),
-        style: {
-          theme: {
-            nightingale: {
-              series: { label: { enabled: true, ...typography(2) } },
-            },
-          },
-        },
-      },
+      sort: [{ field: sum('invoicePayments.signedAmount'), direction: 'desc' }],
+      format: title('Gifts by payment method'),
     },
     'gift-feed': custom({
       type: 'gift-feed',
@@ -168,11 +152,13 @@ const revenue: AgPageState = {
       type: 'pivot-grid',
       dataMapping: {
         rows: [{ id: 'customers.company' }, { id: 'invoices.number' }],
-        columns: [{ id: 'invoices.status' }],
+        columns: [{ id: 'invoices.statusGroup' }],
         values: [sum('invoices.total')],
       },
       format: {
+        ...title('Every gift and pledge, by donor and status'),
         style: {
+          columnWidth: 116,
           totalColumns: true,
           totalColumnsPlacement: 'before',
           grandTotalRow: { enabled: true },
@@ -191,9 +177,8 @@ const revenue: AgPageState = {
     'billed-vs-collected': at(8, 29, 16, 24),
     'collection-rate': at(0, 53, 8, 18),
     'items-treemap': at(8, 53, 8, 18),
-    'status-sunburst': at(16, 53, 8, 18),
-    'payment-methods': at(0, 71, 8, 24),
-    'invoice-status-pivot': at(8, 71, 16, 24),
+    'payment-methods': at(16, 53, 8, 18),
+    'invoice-status-pivot': at(0, 71, 24, 24),
   },
   // Ready in the Filters panel, on the right edge, with nothing selected.
   filter: {
@@ -320,8 +305,8 @@ const cash: AgPageState = {
     'kpi-received': at(6, 0, 6, 7),
     'kpi-fees': at(12, 0, 6, 7),
     'kpi-refunded': at(18, 0, 6, 7),
-    ledger: at(0, 7, 16, 30),
-    'net-by-type': at(16, 7, 8, 30),
+    ledger: at(0, 7, 18, 30),
+    'net-by-type': at(18, 7, 6, 30),
   },
 };
 

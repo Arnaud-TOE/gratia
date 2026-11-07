@@ -28,7 +28,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 const daysBetween = (from: string, to: string) => Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS);
 
 // 'BANK_TRANSFER' -> 'Bank transfer'
-const humanise = (code: string) => code[0] + code.slice(1).toLowerCase().replaceAll('_', ' ');
+const humanise = (code: string) => (code === 'PAYPAL' ? 'PayPal' : code[0] + code.slice(1).toLowerCase().replaceAll('_', ' '));
 
 // --- Invoices ---------------------------------------------------------------------
 

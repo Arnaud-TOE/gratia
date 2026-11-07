@@ -10,6 +10,7 @@
 // Nothing tracks edits as they happen. Save reads the report from Studio with getState(), and
 // leaving a report compares Studio's state with the saved one there and then.
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
@@ -80,17 +81,28 @@ const STUDIO_TEXT = {
 };
 
 // The report is laid out for a laptop or larger; a phone gets a way forward instead of a squeezed grid.
+// It must not render the report as well: a phone browser widens the page to fit what is too wide for it,
+// and everything else, this notice included, ends up off the screen.
 function PhoneNotice() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-pp-canvas p-8 text-center md:hidden">
-      <h2 className="text-2xl font-bold text-pp-navy">The team dashboard needs a bigger screen</h2>
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-pp-canvas p-8 text-center font-paypal">
+      <h1 className="text-2xl font-bold text-pp-navy">The team dashboard needs a bigger screen</h1>
       <p className="mt-3 max-w-sm text-pp-muted">Open this page on a laptop to see the report and talk to the director. On a phone, try what donors see.</p>
+      <Image src="/app.png" width={2880} height={1800} sizes="100vw" alt="The Giving page of the team dashboard, with the latest gifts and who keeps coming back" className="mt-6 w-full max-w-md rounded-xl border border-pp-border" />
       <Link href="/donate" className="mt-6 rounded-full bg-pp-blue px-6 py-3 font-semibold text-white">
         See the donation page
       </Link>
-    </div>
+    </main>
   );
 }
+
+const WIDE_ENOUGH = '(min-width: 768px)';
+
+const watchWidth = (onChange: () => void) => {
+  const query = window.matchMedia(WIDE_ENOUGH);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
 
 // For things built once that need the current value later, like the agent's tools.
 function latestValue<T>(initial: T) {
@@ -110,7 +122,13 @@ export function Dashboard(props: DashboardProps) {
     () => true,
     () => false,
   );
-  return inBrowser ? <ReportsDashboard {...props} /> : <DashboardSkeleton />;
+  const wideEnough = useSyncExternalStore(
+    watchWidth,
+    () => window.matchMedia(WIDE_ENOUGH).matches,
+    () => true,
+  );
+  if (!inBrowser) return <DashboardSkeleton />;
+  return wideEnough ? <ReportsDashboard {...props} /> : <PhoneNotice />;
 }
 
 function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
@@ -391,7 +409,6 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
       />
       {approvalDialog}
       {arrival && <GiftToast gift={arrival} onDismiss={dismissArrival} />}
-      <PhoneNotice />
     </AppShell>
   );
 }
