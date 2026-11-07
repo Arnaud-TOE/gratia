@@ -4,6 +4,7 @@
 // donor's giving history next to their pledges.
 
 import {
+  ApiError,
   CheckoutPaymentIntent,
   ItemCategory,
   OrderStatus,
@@ -75,8 +76,22 @@ export type DonationReceipt = {
   receiptNumber: string;
 };
 
+// A slow answer can make the SDK send the capture twice. The request id makes PayPal answer the second one
+// with the first one's result; if the order was captured some other way, reading it gives the same result.
+async function captureOnce(orderId: string) {
+  try {
+    const { result } = await ordersApi().captureOrder({ id: orderId, paypalRequestId: `gratia-capture-${orderId}`, prefer: 'return=representation' });
+    return result;
+  } catch (error) {
+    const details = error instanceof ApiError ? (error.result as { details?: { issue?: string }[] } | undefined)?.details : undefined;
+    if (details?.[0]?.issue !== 'ORDER_ALREADY_CAPTURED') throw error;
+    const { result } = await ordersApi().getOrder({ id: orderId });
+    return result;
+  }
+}
+
 export async function captureDonation(orderId: string): Promise<DonationReceipt> {
-  const { result: order } = await ordersApi().captureOrder({ id: orderId, prefer: 'return=representation' });
+  const order = await captureOnce(orderId);
   const unit = order.purchaseUnits?.[0];
   const capture = unit?.payments?.captures?.[0];
   if (order.status !== OrderStatus.Completed || !capture?.id) {
