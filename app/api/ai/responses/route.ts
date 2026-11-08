@@ -1,7 +1,9 @@
 import { aiModels, openAiKey } from '@/lib/ai';
 import { aiCallAllowed } from '@/lib/ai-guard';
 import { BUDGET_USED_UP, isOutOfCredit } from '@/lib/ai-messages';
+import { logUsage } from '@/lib/model-usage';
 import { isSameOrigin } from '@/lib/same-origin';
+import { watchForUsage } from '@/lib/sse-usage';
 
 // Proxy for AG Studio's OpenAI adapter (app/dashboard/studio/openai-adapter.ts). The adapter
 // runs in the browser and POSTs to `${endpoint}/responses`; with its endpoint set to /api/ai it lands
@@ -13,6 +15,10 @@ const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 
 // Bounds the cost of a single call, whatever the client asks for. Reasoning tokens count towards it.
 const MAX_OUTPUT_TOKENS = 16_000;
+
+// AG Studio asks for medium reasoning. Low costs about half as much per answer, and the director's
+// tools do the counting and the filtering, so it doesn't need more.
+const REASONING_EFFORT = process.env.OPENAI_REASONING_EFFORT || 'low';
 
 const error = (status: number, message: string) => Response.json({ error: { message } }, { status });
 
@@ -44,7 +50,12 @@ export async function POST(request: Request) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ ...body, model, max_output_tokens: MAX_OUTPUT_TOKENS }),
+    body: JSON.stringify({
+      ...body,
+      model,
+      max_output_tokens: MAX_OUTPUT_TOKENS,
+      reasoning: { ...(typeof body.reasoning === 'object' ? body.reasoning : {}), effort: REASONING_EFFORT },
+    }),
     // Stopping the chat in Studio aborts the browser request, which cancels this one too.
     signal: request.signal,
   });
@@ -56,8 +67,8 @@ export async function POST(request: Request) {
     return error(upstream.status, detail.error?.message ?? `The model request failed (HTTP ${upstream.status}).`);
   }
 
-  // Success is an SSE stream.
-  return new Response(upstream.body, {
+  // Success is an SSE stream. Its last event carries the usage, which is logged on the way through.
+  return new Response(upstream.body?.pipeThrough(watchForUsage(logUsage)) ?? null, {
     status: upstream.status,
     headers: {
       'Content-Type': upstream.headers.get('Content-Type') ?? 'application/json',

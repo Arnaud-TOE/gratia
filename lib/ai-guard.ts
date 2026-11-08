@@ -6,9 +6,10 @@
 const WINDOW_MS = 10 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
 
-// About a dozen questions per visitor per window: enough to try everything the demo offers.
-const CALLS_PER_VISITOR = Number(process.env.AI_CALLS_PER_VISITOR) || 120;
-const CALLS_PER_DAY = Number(process.env.AI_CALLS_PER_DAY) || 600;
+// The demo runs on a small prepaid budget. A full tour of the director (the three suggestions and a
+// board report) takes about 30 calls: a visitor can do that in ten minutes, and the day allows about four.
+const CALLS_PER_VISITOR = Number(process.env.AI_CALLS_PER_VISITOR) || 60;
+const CALLS_PER_DAY = Number(process.env.AI_CALLS_PER_DAY) || 120;
 
 type Verdict = { allowed: true } | { allowed: false; message: string };
 
