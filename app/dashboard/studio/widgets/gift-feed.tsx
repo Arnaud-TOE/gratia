@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AgWidgetField, AgWidgetParams } from 'ag-studio';
 import type { AgWidgetDefinition } from 'ag-studio-react';
+import { groupRuns, type FeedGift } from './gift-runs';
 import { dayOf, useWidgetRows } from './use-widget-rows';
 
 const MAX_GIFTS = 6;
@@ -14,7 +15,6 @@ const DAY_MS = 86_400_000;
 
 type Mapping = { donor?: AgWidgetField[]; date?: AgWidgetField[]; amount?: AgWidgetField[]; program?: AgWidgetField[]; gift?: AgWidgetField[] };
 
-type Gift = { key: string; donor: string; day: string; amount: number; program: string | null };
 
 const initials = (name: string) =>
   name
@@ -54,8 +54,8 @@ function GiftFeed({ widgetApi, dataMapping }: AgWidgetParams) {
 
   const gifts = useMemo(() => {
     if (!donor || !date || !amount) return [];
-    return rows
-      .flatMap((row): Gift[] => {
+    const gifts = rows
+      .flatMap((row): FeedGift[] => {
         const day = dayOf(row[date.key]);
         const given = Number(row[amount.key] ?? 0);
         if (!day || given <= 0) return [];
@@ -63,8 +63,9 @@ function GiftFeed({ widgetApi, dataMapping }: AgWidgetParams) {
         const purpose = program ? (row[program.key] as string | null | undefined) : null;
         const key = giftId ? String(row[giftId.key]) : `${name}|${day}|${given}|${purpose ?? ''}`;
         return [{ key, donor: name, day, amount: given, program: purpose ?? null }];
-      })
-      .slice(0, MAX_GIFTS);
+      });
+    // A donor's gifts in a row share one line, so they don't push everyone else off the list.
+    return groupRuns(gifts).slice(0, MAX_GIFTS);
     // The field objects are rebuilt on every render; their keys don't change with them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, donor?.key, date?.key, amount?.key, program?.key, giftId?.key]);
@@ -104,7 +105,9 @@ function GiftFeed({ widgetApi, dataMapping }: AgWidgetParams) {
                 <span className="shrink-0 text-sm font-semibold text-pp-navy">{widgetApi.formatFieldValue(amount, gift.amount)}</span>
               </span>
               <span className="flex items-center justify-between gap-2 text-xs text-pp-muted">
-                <span className="truncate">{gift.program ?? 'General fund'}</span>
+                <span className="truncate">
+                  {gift.count > 1 ? `${gift.count} gifts${gift.program ? ` to ${gift.program}` : ''}` : (gift.program ?? 'General fund')}
+                </span>
                 {isNew ? (
                   <span className="shrink-0 rounded-full bg-pp-success px-1.5 py-px text-[10px] font-semibold text-white">New</span>
                 ) : (
