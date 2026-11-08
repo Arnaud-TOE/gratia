@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fx.css";
 
 @theme inline {
   --font-mono: var(--font-geist-mono);
@@ -384,4 +385,33 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .hero-video { display: none; }
   .hero-still { display: block; }
+}
+
+/* ---- The dashboard's few flourishes ---- */
+
+.brand-strip {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, #0f766e, #14b8a6 40%, #f59e0b);
+}
+
+.ask-glow {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f766e, #0b4f4a 60%, #123b3a) !important;
+  box-shadow: 0 8px 24px -10px rgb(15 118 110 / 0.8);
+}
+
+.ask-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 700ms ease;
+}
+
+.ask-glow:hover::after {
+  transform: translateX(120%);
 }

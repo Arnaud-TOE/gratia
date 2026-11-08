@@ -92,7 +92,7 @@ export function ReportHeader({
         ) : (
           <>
             {onAsk && (
-              <Button variant="primary" size="sm" onClick={onAsk} className={firstVisit ? 'ask-hint' : undefined}>
+              <Button variant="primary" size="sm" onClick={onAsk} className={firstVisit ? 'ask-glow ask-hint' : 'ask-glow'}>
                 <SparkleIcon className="size-4" /> Ask your director
               </Button>
             )}

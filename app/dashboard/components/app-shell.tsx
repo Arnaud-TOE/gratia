@@ -39,13 +39,14 @@ function BrandLockup() {
 
 function TopBar() {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-6 border-b border-pp-border bg-white px-6">
+    <header className="relative z-10 flex h-16 shrink-0 items-center gap-6 border-b border-pp-border bg-white/85 px-6 backdrop-blur-xl">
+      <span className="brand-strip" aria-hidden />
       <BrandLockup />
       <div className="ml-auto flex items-center gap-1 text-pp-navy">
         <Link
           href="/donate"
           target="_blank"
-          className="mr-2 hidden rounded-full border border-pp-border px-4 py-1.5 text-sm font-semibold text-pp-blue hover:bg-pp-highlight sm:inline-flex"
+          className="mr-2 hidden rounded-full border border-pp-border bg-white px-4 py-1.5 text-sm font-semibold text-pp-blue shadow-sm transition hover:-translate-y-px hover:border-pp-blue/40 hover:shadow-md sm:inline-flex"
         >
           Donation page ↗
         </Link>
@@ -56,7 +57,7 @@ function TopBar() {
           <BellIcon />
         </span>
         <span className="ml-2 flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-full bg-pp-navy text-sm font-semibold text-white">
+          <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-pp-navy text-sm font-semibold text-white shadow-md shadow-teal-700/30 ring-2 ring-white">
             HL
           </span>
           <span className="hidden text-sm font-semibold sm:inline">Harbor Lane team</span>

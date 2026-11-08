@@ -123,7 +123,7 @@ export function DonateForm({ clientId, campaigns }: { clientId: string; campaign
   if (status.kind === 'thanks') {
     const { receipt } = status;
     return (
-      <div className="thanks-card relative overflow-hidden rounded-3xl border border-hl-border bg-white p-8 text-center shadow-xl shadow-hl-teal/10">
+      <div className="thanks-card relative overflow-hidden rounded-[1.45rem] bg-white p-8 text-center shadow-xl shadow-hl-teal/10">
         <span className="thanks-burst" aria-hidden>
           {['♥', '🐾', '♥', '★', '♥', '🐾', '♥', '★'].map((glyph, i) => (
             <i key={i} style={{ '--i': i } as CSSProperties}>
@@ -159,7 +159,7 @@ export function DonateForm({ clientId, campaigns }: { clientId: string; campaign
 
   const busy = status.kind === 'loading' || status.kind === 'processing';
   return (
-    <div className="rounded-3xl border border-hl-border bg-white p-6 shadow-xl shadow-hl-teal/10 sm:p-8">
+    <div className="rounded-[1.45rem] bg-white p-6 sm:p-8">
       <h2 className="text-2xl font-bold text-hl-ink">Your gift</h2>
       <p className="mt-1 text-sm text-hl-muted">One-time, through PayPal. A receipt comes straight back.</p>
       <fieldset className="mt-6">

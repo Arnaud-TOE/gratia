@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, type CSSProperties } from 'react';
 import { connection } from 'next/server';
 import { FlameIcon, HeartPulseIcon, LockIcon, SyringeIcon } from '@/components/icons';
+import { CountUp } from '@/components/fx';
 import { readCampaignProgress } from '@/lib/campaign-progress';
 import { CAMPAIGNS, ORGANIZATION } from '@/lib/donations';
 import { DonateForm } from './donate-form';
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
 };
 
 const APPEAL = 'Winter Shelter Drive';
+
+// The form's light border, in the rescue's teal and amber (app/fx.css).
+const BEAM = { '--beam-fill': '#fff', '--beam-base': '#e4dccf', '--glow-a': '#0f766e', '--glow-b': '#f59e0b' } as CSSProperties;
 
 const impact = [
   { icon: FlameIcon, amount: '$25', detail: 'keeps one kennel heated for a week' },
@@ -31,7 +35,9 @@ async function AppealProgress() {
   return (
     <div className="appear rounded-3xl border border-hl-border bg-white/90 p-6 shadow-sm backdrop-blur">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-3xl font-bold text-hl-ink">{usd(progress.raised)}</p>
+        <p className="text-4xl font-bold tracking-tight text-hl-ink">
+          <CountUp to={Math.round(progress.raised)} prefix="$" />
+        </p>
         {progress.goal && <p className="text-sm text-hl-muted">raised of {usd(progress.goal)}</p>}
       </div>
       {share !== null && (
@@ -115,7 +121,9 @@ export default function DonatePage() {
 
         <section className="md:sticky md:top-6 md:col-start-2 md:row-span-2 md:row-start-1 md:self-start">
           {clientId ? (
-            <DonateForm clientId={clientId} campaigns={[...CAMPAIGNS]} />
+            <div className="beam rounded-[1.5rem] shadow-2xl shadow-hl-teal/20" style={BEAM}>
+              <DonateForm clientId={clientId} campaigns={[...CAMPAIGNS]} />
+            </div>
           ) : (
             <p className="rounded-2xl bg-white p-8 text-hl-muted">
               Donations are not configured: set PAYPAL_CLIENT_ID and PAYPAL_SECRET in .env.local.
