@@ -210,21 +210,21 @@ export default function Home() {
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-300">How it works</p>
             <h2 className="text-balance mt-4 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">From a PayPal gift to a thank-you, in three steps.</h2>
           </Reveal>
-          <ol className="relative mt-16 grid gap-10 md:grid-cols-3 md:gap-6">
+          <div role="list" className="relative mt-16 grid gap-10 md:grid-cols-3 md:gap-6">
             <span className="absolute left-0 right-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-teal-300/50 to-transparent md:block" aria-hidden />
             {steps.map((step, i) => (
               <Reveal key={step.title} delay={i * 120}>
-                <li className="relative">
+                <div role="listitem" className="relative">
                   <span className="relative grid size-14 place-items-center rounded-2xl border border-teal-300/40 bg-[#04191a] text-teal-200 shadow-[0_0_30px_-4px] shadow-teal-400/50">
                     <step.icon className="size-6" />
                   </span>
                   <p className="mt-6 text-sm font-bold text-white/40">0{i + 1}</p>
                   <h3 className="mt-1 text-2xl font-bold tracking-tight">{step.title}</h3>
                   <p className="mt-2 leading-relaxed text-white/60">{step.detail}</p>
-                </li>
+                </div>
               </Reveal>
             ))}
-          </ol>
+          </div>
         </div>
       </section>
 

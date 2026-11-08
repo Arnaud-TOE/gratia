@@ -415,3 +415,60 @@ body {
 .ask-glow:hover::after {
   transform: translateX(120%);
 }
+
+/* The sidebar on the dark frame: its light-theme classes, recoloured. Menus and inputs inside it keep
+   their light look. */
+:root {
+  --frame: #04191a;
+  --palette-accent: #14b8a6;
+}
+
+.dark-rail {
+  color: rgb(255 255 255 / 0.85);
+}
+
+.dark-rail :is(.text-pp-muted):not(input):not([role='menu'] *) {
+  color: rgb(255 255 255 / 0.5);
+}
+
+.dark-rail :is(.text-pp-ink):not(input):not([role='menu'] *) {
+  color: rgb(255 255 255 / 0.85);
+}
+
+.dark-rail :is(.text-pp-navy):not(input):not([role='menu'] *) {
+  color: #fff;
+}
+
+.dark-rail :is(.text-pp-blue):not(input):not([role='menu'] *):not(button.bg-pp-blue) {
+  color: #5eead4;
+}
+
+.dark-rail .bg-pp-highlight:not([role='menu'] *) {
+  background: linear-gradient(90deg, rgb(20 184 166 / 0.28), rgb(20 184 166 / 0.08));
+  box-shadow: inset 0 0 0 1px rgb(94 234 212 / 0.25);
+  color: #fff;
+}
+
+.dark-rail :is(.hover\:bg-pp-canvas, .hover\:bg-pp-highlight):hover:not([role='menu'] *) {
+  background: rgb(255 255 255 / 0.07);
+}
+
+.dark-rail .hover\:bg-white:hover:not([role='menu'] *) {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.dark-rail .hover\:text-pp-navy:hover:not([role='menu'] *) {
+  color: #fff;
+}
+
+.dark-rail :is(.border-pp-border, .border-t, .border-l):not([role='menu'] *) {
+  border-color: rgb(255 255 255 / 0.1);
+}
+
+.dark-rail .bg-pp-border:not([role='menu'] *) {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.dark-rail .bg-pp-border\/60 {
+  background: rgb(255 255 255 / 0.08);
+}

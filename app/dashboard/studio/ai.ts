@@ -12,7 +12,7 @@ import { buildDonorTools, type OpenPage } from './donor-tools';
 import { openaiAdapter } from './openai-adapter';
 
 // Suggestions shown in a new AI conversation, before anything has been typed.
-const PROMPT_STARTERS: AgAiPromptStarter[] = [
+export const PROMPT_STARTERS: AgAiPromptStarter[] = [
   {
     label: 'Who are we losing?',
     prompt: 'Which donors are we at risk of losing? Draft a short personal note for the top three.',

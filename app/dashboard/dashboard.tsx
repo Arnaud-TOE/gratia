@@ -12,6 +12,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   AgStudioAiModule,
@@ -49,7 +50,8 @@ import { pagesFor, pageTitlesFor } from './page-titles';
 import { ReportsSidebar } from './components/sidebar';
 import { DashboardSkeleton } from './components/skeleton';
 import * as reportState from './report-state';
-import { buildAi } from './studio/ai';
+import { buildAi, PROMPT_STARTERS } from './studio/ai';
+import { CommandPalette, type Command } from '@/components/command-palette';
 import { readVisit } from './visit';
 import { buildStudioData, hasData } from './studio/data';
 import { toolDisplay } from './studio/tool-display';
@@ -106,6 +108,15 @@ const watchWidth = (onChange: () => void) => {
 };
 
 // For things built once that need the current value later, like the agent's tools.
+// Presses the button with this label as soon as it appears, giving up after about four seconds.
+function pressWhenShown(label: string, triesLeft = 27) {
+  setTimeout(() => {
+    const button = [...document.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === label);
+    if (button) button.click();
+    else if (triesLeft > 0) pressWhenShown(label, triesLeft - 1);
+  }, 150);
+}
+
 function latestValue<T>(initial: T) {
   let value = initial;
   return {
@@ -133,6 +144,7 @@ export function Dashboard(props: DashboardProps) {
 }
 
 function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
+  const router = useRouter();
   const { store, latest, update, editReport } = useReports();
   const apiRef = useRef<AgStudioApi | null>(null);
 
@@ -303,8 +315,54 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
   const editing = mode === 'edit';
   const pages = pagesFor({ pageTitles: saved.pageTitles, state });
 
+  // --- The command palette (Ctrl K) -----------------------------------------------------
+  // A suggestion opens the director and presses its own prompt starter, so it runs exactly as if
+  // clicked in the chat.
+  const askStarter = (label: string) => {
+    askDirector();
+    pressWhenShown(label);
+  };
+  const commands: Command[] = [
+    ...(ai
+      ? [
+          ...PROMPT_STARTERS.map((starter) => ({
+            id: `ask-${starter.label}`,
+            group: 'Ask your director',
+            label: starter.label,
+            hint: 'AI',
+            icon: '✦',
+            keywords: starter.prompt,
+            run: () => askStarter(starter.label),
+          })),
+          { id: 'ask', group: 'Ask your director', label: 'Open the chat', icon: '✦', keywords: 'director assistant ai', run: askDirector },
+        ]
+      : []),
+    ...pages.map((page) => ({
+      id: `page-${page.id}`,
+      group: `Pages of ${saved.name}`,
+      label: page.title,
+      icon: '▤',
+      run: () => selectPage(saved.id, page.id),
+    })),
+    ...reports
+      .filter((report) => report.id !== saved.id)
+      .map((report) => ({ id: `report-${report.id}`, group: 'Reports', label: report.name, icon: '▦', run: () => openReport(report.id) })),
+    { id: 'new-report', group: 'Reports', label: 'New report', icon: '+', run: () => guard(() => setDialog({ kind: 'create' })) },
+    {
+      id: 'edit',
+      group: 'Reports',
+      label: editing ? 'Stop editing this report' : 'Edit this report',
+      icon: '✎',
+      run: () => (editing ? guard(() => changeMode('view')) : changeMode('edit')),
+    },
+    { id: 'donate', group: 'Go to', label: 'Donation page', hint: 'New tab', icon: '♥', keywords: 'give gift paypal', run: () => window.open('/donate', '_blank') },
+    { id: 'home', group: 'Go to', label: 'Front page', icon: '⌂', run: () => router.push('/') },
+    { id: 'reset', group: 'Go to', label: 'Reset the demo', icon: '↺', run: () => setDialog({ kind: 'reset' }) },
+  ];
+
   return (
     <AppShell
+      search
       sidebar={
         <ReportsSidebar
           reports={reports}
@@ -425,6 +483,7 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
         }}
       />
       {approvalDialog}
+      <CommandPalette commands={commands} placeholder="Ask your director, or jump to a page…" />
       {arrival && <GiftToast gift={arrival} onDismiss={dismissArrival} />}
     </AppShell>
   );
