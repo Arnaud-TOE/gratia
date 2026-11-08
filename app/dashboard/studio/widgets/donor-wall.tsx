@@ -9,12 +9,12 @@
 import { useMemo } from 'react';
 import type { AgWidgetField, AgWidgetParams } from 'ag-studio';
 import type { AgWidgetDefinition } from 'ag-studio-react';
-import { useWidgetRows } from './use-widget-rows';
+import { matchingValues, useHighlightedRows } from './use-widget-rows';
 
 const MAX_ROWS = 8;
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-type Entry = { name: string; amount: number; gifts: number | null };
+type Entry = { name: string; amount: number; gifts: number | null; matching: number | null };
 
 type DonorWallMapping = { donor?: AgWidgetField[]; amount?: AgWidgetField[]; gifts?: AgWidgetField[] };
 
@@ -24,7 +24,7 @@ function DonorWall({ widgetApi, dataMapping }: AgWidgetParams) {
   const amount = mapping.amount?.[0];
   const gifts = mapping.gifts?.[0];
 
-  const rows = useWidgetRows(
+  const { rows, highlighted } = useHighlightedRows(
     widgetApi,
     donor && amount
       ? {
@@ -37,16 +37,21 @@ function DonorWall({ widgetApi, dataMapping }: AgWidgetParams) {
 
   const entries = useMemo<Entry[]>(() => {
     if (!donor || !amount) return [];
+    const matching = matchingValues(highlighted, donor.key, amount.key);
     return rows
-      .map((row) => ({
-        name: String(row[donor.key] ?? 'Anonymous'),
-        amount: Number(row[amount.key] ?? 0),
-        gifts: gifts ? Number(row[gifts.key] ?? 0) : null,
-      }))
+      .map((row) => {
+        const name = String(row[donor.key] ?? 'Anonymous');
+        return {
+          name,
+          amount: Number(row[amount.key] ?? 0),
+          gifts: gifts ? Number(row[gifts.key] ?? 0) : null,
+          matching: matching ? (matching.get(name) ?? 0) : null,
+        };
+      })
       .filter((entry) => entry.amount > 0);
     // The field objects are rebuilt on every render; their keys don't change with them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, donor?.key, amount?.key, gifts?.key]);
+  }, [rows, highlighted, donor?.key, amount?.key, gifts?.key]);
 
   const selected = new Set(
     widgetApi.getCrossFilterSelections()?.flatMap((selection) => (selection.type === 'value' ? selection.values.map(String) : [])) ?? [],
@@ -59,9 +64,9 @@ function DonorWall({ widgetApi, dataMapping }: AgWidgetParams) {
           key={entry.name}
           title={`Show only ${entry.name}`}
           onClick={() => donor && widgetApi.toggleCrossFilter({ type: 'value', group: 0, field: donor, value: entry.name })}
-          className={`flex cursor-pointer items-center gap-3 rounded-xl bg-pp-canvas px-3 py-2 hover:bg-pp-highlight ${
+          className={`flex cursor-pointer items-center gap-3 rounded-xl bg-pp-canvas px-3 py-2 transition-opacity hover:bg-pp-highlight ${
             selected.has(entry.name) ? 'ring-2 ring-pp-blue' : ''
-          }`}
+          } ${entry.matching !== null && entry.matching <= 0 ? 'opacity-45' : ''}`}
         >
           <span className="w-7 shrink-0 text-center text-lg" aria-label={`Rank ${i + 1}`}>
             {MEDALS[i] ?? <span className="text-sm font-semibold text-pp-muted">{i + 1}</span>}
@@ -74,11 +79,17 @@ function DonorWall({ widgetApi, dataMapping }: AgWidgetParams) {
               </span>
             </span>
             <span className="mt-1 flex items-center gap-2">
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-pp-border">
+              <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-pp-border">
                 <span
-                  className="block h-full rounded-full bg-pp-blue"
+                  className={`block h-full rounded-full bg-pp-blue ${entry.matching !== null ? 'opacity-30' : ''}`}
                   style={{ width: `${Math.max(4, (entry.amount / top) * 100)}%` }}
                 />
+                {entry.matching !== null && entry.matching > 0 && (
+                  <span
+                    className="absolute inset-y-0 left-0 rounded-full bg-pp-blue"
+                    style={{ width: `${Math.max(4, (entry.matching / top) * 100)}%` }}
+                  />
+                )}
               </span>
               {entry.gifts !== null && (
                 <span className="shrink-0 text-xs text-pp-muted">

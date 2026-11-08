@@ -9,6 +9,12 @@ export type WidgetRow = Record<string, unknown>;
 
 type DisplayState = 'loading' | 'displayed' | 'noData' | 'incompleteDataMapping';
 
+export type WidgetData = {
+  rows: WidgetRow[];
+  /** With a cross filter on the page, the rows that match it; null when nothing is selected. */
+  highlighted: WidgetRow[] | null;
+};
+
 /**
  * Rows for a custom widget, kept current. When a filter, a cross filter or the data changes, Studio
  * re-renders the widget without necessarily changing any prop, so the query runs after every
@@ -16,7 +22,19 @@ type DisplayState = 'loading' | 'displayed' | 'noData' | 'incompleteDataMapping'
  * `query` is null while the widget's data mapping is incomplete.
  */
 export function useWidgetRows(widgetApi: WidgetApi, query: Query | null): WidgetRow[] {
-  const [rows, setRows] = useState<WidgetRow[]>([]);
+  return useWidgetData(widgetApi, query, 'filter').rows;
+}
+
+/**
+ * Like useWidgetRows, but in AG Studio's highlight mode: a cross filter leaves every row in place and
+ * says which ones match, the way the built-in charts fade what is not selected instead of dropping it.
+ */
+export function useHighlightedRows(widgetApi: WidgetApi, query: Query | null): WidgetData {
+  return useWidgetData(widgetApi, query, 'highlight');
+}
+
+function useWidgetData(widgetApi: WidgetApi, query: Query | null, crossFilter: 'filter' | 'highlight'): WidgetData {
+  const [data, setData] = useState<WidgetData>({ rows: [], highlighted: null });
   const lastResult = useRef<string | null>(null);
   const shown = useRef<DisplayState | null>(null);
 
@@ -36,15 +54,16 @@ export function useWidgetRows(widgetApi: WidgetApi, query: Query | null): Widget
 
     const controller = new AbortController();
     widgetApi
-      .getData(query, { signal: controller.signal })
+      .getData(query, { signal: controller.signal, crossFilter })
       .then((response) => {
-        const next = (response as { results: { rows: WidgetRow[] } }).results.rows;
+        const { results, crossFilter: matching } = response as { results: { rows: WidgetRow[] }; crossFilter?: { rows: WidgetRow[] } };
+        const next: WidgetData = { rows: results.rows, highlighted: crossFilter === 'highlight' && matching ? matching.rows : null };
         const result = JSON.stringify(next);
         if (result !== lastResult.current) {
           lastResult.current = result;
-          setRows(next);
+          setData(next);
         }
-        show(next.length > 0 ? 'displayed' : 'noData');
+        show(next.rows.length > 0 ? 'displayed' : 'noData');
       })
       .catch(() => {
         // Superseded by a newer query, or the widget went away: not an empty result.
@@ -53,7 +72,13 @@ export function useWidgetRows(widgetApi: WidgetApi, query: Query | null): Widget
     return () => controller.abort();
   });
 
-  return rows;
+  return data;
+}
+
+/** Each matching row's value for one field, by the row's label; null when nothing is selected. */
+export function matchingValues(highlighted: WidgetRow[] | null, labelKey: string, valueKey: string): Map<string, number> | null {
+  if (!highlighted) return null;
+  return new Map(highlighted.map((row) => [String(row[labelKey]), Number(row[valueKey] ?? 0)]));
 }
 
 /** A field's value as 'YYYY-MM-DD'. The data engine may hand dates back as strings or as Date objects. */

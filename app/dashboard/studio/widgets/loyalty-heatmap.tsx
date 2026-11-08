@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import type { AgWidgetField, AgWidgetParams } from 'ag-studio';
 import type { AgWidgetDefinition } from 'ag-studio-react';
 import { buildLoyaltyGrid } from '@/lib/loyalty';
-import { dayOf, useWidgetRows } from './use-widget-rows';
+import { dayOf, useHighlightedRows } from './use-widget-rows';
 
 const MAX_DONORS = 9;
 const QUIET_TINT = 'rgba(245, 158, 11, 0.18)';
@@ -26,7 +26,17 @@ function LoyaltyHeatmap({ widgetApi, dataMapping }: AgWidgetParams) {
   const date = mapping.date?.[0];
   const amount = mapping.amount?.[0];
 
-  const rows = useWidgetRows(widgetApi, donor && date && amount ? { fields: [donor, date, amount], limit: { count: 5000 } } : null);
+  const { rows, highlighted } = useHighlightedRows(
+    widgetApi,
+    donor && date && amount ? { fields: [donor, date, amount], limit: { count: 5000 } } : null,
+  );
+  // With a selection elsewhere on the page, donors outside it fade instead of leaving the grid.
+  const matchingDonors = useMemo(
+    () => (highlighted && donor ? new Set(highlighted.map((row) => String(row[donor.key] ?? 'Anonymous'))) : null),
+    // The field objects are rebuilt on every render; their keys don't change with them.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [highlighted, donor?.key],
+  );
 
   const grid = useMemo(() => {
     if (!donor || !date || !amount) return null;
@@ -65,9 +75,9 @@ function LoyaltyHeatmap({ widgetApi, dataMapping }: AgWidgetParams) {
             type="button"
             title={`Show only ${row.name}`}
             onClick={() => widgetApi.toggleCrossFilter({ type: 'value', group: 0, field: donor, value: row.name })}
-            className={`grid min-h-0 flex-1 items-stretch gap-[3px] rounded text-left hover:bg-pp-highlight ${
+            className={`grid min-h-0 flex-1 items-stretch gap-[3px] rounded text-left transition-opacity hover:bg-pp-highlight ${
               selected.has(row.name) ? 'ring-2 ring-pp-blue' : ''
-            }`}
+            } ${matchingDonors && !matchingDonors.has(row.name) ? 'opacity-35' : ''}`}
             style={{ gridTemplateColumns: columns }}
           >
             <span className="flex items-center gap-1.5 truncate pr-1 font-medium text-pp-ink">

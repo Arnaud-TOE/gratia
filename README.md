@@ -21,7 +21,7 @@ shelter, **Harbor Lane Animal Rescue**.
 
 ## TL;DR for judges
 
-- **Dashboard:** every gift, monthly sponsorship and business pledge from PayPal in one [AG Studio](https://www.ag-grid.com/studio/) dashboard, re-themed as Gratia, with **three custom widgets** AG Studio doesn't ship: a live gift feed, a donor-by-month loyalty heatmap and a donor wall. Clicking a donor filters the page.
+- **Dashboard:** every gift, monthly sponsorship and business pledge from PayPal in one [AG Studio](https://www.ag-grid.com/studio/) dashboard, re-themed as Gratia, with **four custom widgets** AG Studio doesn't ship: campaign goal bars, a live gift feed, a donor-by-month loyalty heatmap and a donor wall. Clicking a campaign or a donor filters the page.
 - **Agent:** on the dashboard, click **Ask your director** and pick a suggestion. The **Development Director** finds donors at risk, drafts personal notes, sends pledge reminders through **PayPal Invoicing** after you approve them, and delegates dashboard building to **AG Studio's five built-in agents**.
 - **Donations:** `/donate` takes a real (sandbox) PayPal payment with the **JavaScript SDK v6**. The order is created and captured with the **PayPal Server SDK**, and a paid receipt lands in PayPal Invoicing. Keep the dashboard open in another tab: it notices the gift within seconds, updates every widget and announces it.
 - **Human in the loop:** the model drafts and asks; only a person can press "Send through PayPal". The server re-checks the pledge and rate-limits reminders.
@@ -56,7 +56,7 @@ shelter, **Harbor Lane Animal Rescue**.
 
 - **It acts, not just reports.** Reminders go out through PayPal Invoicing, and gifts are captured through Checkout, with a human approving every outbound message.
 - **A custom agent that works with AG Studio's own team** of agents, instead of a single chatbot over a chart.
-- **Three widgets AG Studio doesn't ship**, built on its widget API, so filters and cross-filters apply and the agents can place them: the **gift feed**, the **loyalty heatmap** (who keeps coming back, month by month, and who has gone quiet) and the **donor wall**.
+- **Four widgets AG Studio doesn't ship**, built on its widget API, so filters and cross-filters apply and the agents can place them: **campaign goals** (one progress bar per campaign, against its goal), the **gift feed**, the **loyalty heatmap** (who keeps coming back, month by month, and who has gone quiet) and the **donor wall**. Like the built-in charts, they use Studio's highlight mode: a selection elsewhere fades what it leaves out instead of hiding it.
 - **A live dashboard on a read API.** Each online gift is mirrored as a PayPal invoice receipt, so an open dashboard picks it up within seconds, instead of waiting hours for Transaction Search.
 
 ## Architecture

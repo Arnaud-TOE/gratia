@@ -102,14 +102,15 @@ const revenue: AgPageState = {
         },
       },
     },
-    'items-treemap': {
-      type: 'treemap-chart',
+    'campaign-goals': custom({
+      type: 'campaign-progress',
       dataMapping: {
-        categoryKey: [{ id: 'invoiceItems.name' }],
-        valueKey: [sum('invoiceItems.lineTotal')],
+        campaign: [{ id: 'invoicePayments.program' }],
+        amount: [sum('invoicePayments.signedAmount')],
+        donors: [countd('invoices.customerId')],
       },
-      format: title('Giving by program'),
-    },
+      format: title('Campaign goals'),
+    }),
     'payment-methods': {
       type: 'bar-chart-grouped',
       dataMapping: {
@@ -175,10 +176,10 @@ const revenue: AgPageState = {
     'loyalty-heatmap': at(8, 7, 16, 22),
     'donor-wall': at(0, 29, 8, 24),
     'billed-vs-collected': at(8, 29, 16, 24),
-    'collection-rate': at(0, 53, 8, 18),
-    'items-treemap': at(8, 53, 8, 18),
-    'payment-methods': at(16, 53, 8, 18),
-    'invoice-status-pivot': at(0, 71, 24, 24),
+    'collection-rate': at(0, 53, 8, 23),
+    'campaign-goals': at(8, 53, 8, 23),
+    'payment-methods': at(16, 53, 8, 23),
+    'invoice-status-pivot': at(0, 76, 24, 24),
   },
   // Ready in the Filters panel, on the right edge, with nothing selected.
   filter: {
