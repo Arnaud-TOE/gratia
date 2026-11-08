@@ -43,6 +43,10 @@ export default function Home() {
         a live dashboard and an AI teammate that keeps donors close, built here for {ORGANIZATION}, a fictional
         shelter running on the PayPal sandbox.
       </p>
+      <p className="mt-2 max-w-2xl text-xs text-pp-muted">
+        Source: the Fundraising Effectiveness Project, Q4 2025, which Bloomerang cites for an 18.9% retention rate among
+        first-time donors.
+      </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link href="/dashboard" className="rounded-full bg-pp-blue px-6 py-3 font-semibold text-white hover:bg-pp-blue-dark">
           Open the team dashboard

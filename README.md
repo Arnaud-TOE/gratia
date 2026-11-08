@@ -1,5 +1,7 @@
 # Gratia — the AI development director for small nonprofits
 
+[![CI](https://github.com/Arnaud-TOE/gratia/actions/workflows/ci.yml/badge.svg)](https://github.com/Arnaud-TOE/gratia/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **Four out of five first-time donors don't come back the next year.**[^fep] Small nonprofits collect through PayPal, but
 nobody on a team of volunteers has time to watch who is drifting away, thank people properly or chase the business
 pledges that never arrived. Gratia turns a nonprofit's PayPal account into a live dashboard and an AI teammate that does
