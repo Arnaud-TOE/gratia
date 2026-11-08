@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { GratiaMark } from './dashboard/components/ui/gratia-mark';
+import { HeroVideo } from '@/components/hero-video';
 import { ORGANIZATION, PRODUCT } from '@/lib/organization';
 
 // The front door: what Gratia is, and the two ways into the demo.
@@ -53,14 +53,7 @@ export default function Home() {
       </div>
 
       <Link href="/dashboard" className="mt-12 block overflow-hidden rounded-2xl border border-pp-border shadow-sm">
-        <Image
-          src="/app.png"
-          width={2880}
-          height={1800}
-          priority
-          sizes="(min-width: 896px) 848px, 100vw"
-          alt="The Giving page of the team dashboard: the latest gifts, who keeps coming back and who has gone quiet"
-        />
+        <HeroVideo />
       </Link>
 
       <ul className="mt-14 grid gap-4 sm:grid-cols-3">

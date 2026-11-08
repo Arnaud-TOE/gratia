@@ -110,3 +110,9 @@ body {
   0%, 100% { box-shadow: 0 0 0 0 rgb(15 118 110 / 0.45); }
   50% { box-shadow: 0 0 0 8px rgb(15 118 110 / 0); }
 }
+
+/* The front page's loop; a still for people who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-video { display: none; }
+  .hero-still { display: block; }
+}
