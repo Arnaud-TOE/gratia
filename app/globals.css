@@ -111,6 +111,275 @@ body {
   50% { box-shadow: 0 0 0 8px rgb(15 118 110 / 0); }
 }
 
+/* ---- The public pages: front page, donation page, not found ---- */
+
+.hero-glow {
+  background:
+    radial-gradient(60rem 30rem at 15% -10%, rgb(20 184 166 / 0.16), transparent 60%),
+    radial-gradient(40rem 26rem at 95% 10%, rgb(245 158 11 / 0.14), transparent 60%),
+    radial-gradient(50rem 30rem at 50% 110%, rgb(15 118 110 / 0.10), transparent 60%);
+}
+
+.hero-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(18 59 58 / 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+  pointer-events: none;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--pp-blue) 10%, #14b8a6 55%, #d97706 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #10b981;
+}
+
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid #10b981;
+  opacity: 0;
+}
+
+.browser-frame {
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid var(--pp-border);
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgb(18 39 43 / 0.06),
+    0 24px 60px -18px rgb(15 118 110 / 0.35),
+    0 50px 120px -40px rgb(18 39 43 / 0.35);
+  transition: transform 400ms ease, box-shadow 400ms ease;
+}
+
+.browser-frame:hover {
+  transform: translateY(-4px);
+}
+
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--pp-border);
+  background: #faf8f4;
+}
+
+.browser-bar > i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e2ddd3;
+}
+
+.browser-url {
+  margin-left: 12px;
+  flex: 1;
+  max-width: 22rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  padding: 3px 12px;
+  font-size: 12px;
+  color: var(--pp-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.float-chip {
+  position: absolute;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  max-width: 17rem;
+  border-radius: 1rem;
+  border: 1px solid var(--pp-border);
+  background: rgb(255 255 255 / 0.95);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--pp-muted);
+  box-shadow: 0 18px 40px -16px rgb(18 39 43 / 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.float-chip b {
+  color: var(--pp-navy);
+}
+
+.chip-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+@media (min-width: 1024px) {
+  .float-chip {
+    display: flex;
+  }
+}
+
+.card-lift {
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  border-color: rgb(15 118 110 / 0.35);
+  box-shadow: 0 22px 44px -24px rgb(15 118 110 / 0.45);
+}
+
+.cta-band {
+  background:
+    radial-gradient(30rem 18rem at 85% 0%, rgb(245 158 11 / 0.35), transparent 60%),
+    radial-gradient(36rem 22rem at 0% 100%, rgb(20 184 166 / 0.45), transparent 60%),
+    linear-gradient(135deg, #0b4f4a, #123b3a);
+}
+
+.paw-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%230f766e' fill-opacity='0.06' transform='rotate(-18 60 60)'%3E%3Cellipse cx='60' cy='70' rx='13' ry='11'/%3E%3Ccircle cx='44' cy='52' r='5.5'/%3E%3Ccircle cx='54' cy='44' r='5.5'/%3E%3Ccircle cx='66' cy='44' r='5.5'/%3E%3Ccircle cx='76' cy='52' r='5.5'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.donate-bg {
+  isolation: isolate;
+  background-color: var(--hl-cream);
+}
+
+.donate-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(40rem 26rem at 0% 0%, rgb(15 118 110 / 0.12), transparent 60%),
+    radial-gradient(36rem 24rem at 100% 20%, rgb(245 158 11 / 0.14), transparent 60%);
+  pointer-events: none;
+}
+
+.thanks-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.thanks-burst i {
+  position: absolute;
+  left: calc(8% + var(--i) * 12%);
+  bottom: -1.5rem;
+  font-style: normal;
+  font-size: 1.1rem;
+  color: var(--hl-teal);
+  opacity: 0;
+}
+
+.thanks-burst i:nth-child(3n) {
+  color: #f59e0b;
+}
+
+/* Motion, only for people who are fine with it. */
+@media (prefers-reduced-motion: no-preference) {
+  .appear {
+    animation: chip-in 600ms both cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .fill-bar {
+    transform-origin: left;
+    animation: fill-bar 1400ms 200ms both cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .thanks-card {
+    animation: chip-in 500ms both cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .thanks-paw {
+    animation: paw-pop 900ms 150ms both cubic-bezier(0.3, 1.6, 0.4, 1);
+  }
+
+  .thanks-burst i {
+    animation: rise 2.6s calc(var(--i) * 140ms) ease-out both;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 700ms ease, transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .live-dot::after {
+    animation: live-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .float-a { animation: float 7s ease-in-out infinite, chip-in 700ms 400ms both cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .float-b { animation: float 8s 1s ease-in-out infinite, chip-in 700ms 900ms both cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .float-c { animation: float 7.5s 0.5s ease-in-out infinite, chip-in 700ms 1400ms both cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+  .reveal .grow-bar {
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 1100ms 250ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .reveal.is-visible .grow-bar {
+    transform: none;
+  }
+}
+
+@keyframes fill-bar {
+  from { transform: scaleX(0); }
+  to { transform: none; }
+}
+
+@keyframes paw-pop {
+  from { transform: scale(0.3) rotate(-25deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes rise {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-17rem) scale(1.1) rotate(18deg); opacity: 0; }
+}
+
+@keyframes live-ping {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  80%, 100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+@keyframes chip-in {
+  from { opacity: 0; scale: 0.92; }
+  to { opacity: 1; scale: 1; }
+}
+
 /* The front page's loop; a still for people who prefer less motion. */
 @media (prefers-reduced-motion: reduce) {
   .hero-video { display: none; }

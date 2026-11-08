@@ -5,7 +5,7 @@
 // sees is the amount PayPal charges.
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
 const SDK_URL = 'https://www.sandbox.paypal.com/web-sdk/v6/core';
 const PRESETS = [25, 50, 100, 250];
@@ -123,8 +123,15 @@ export function DonateForm({ clientId, campaigns }: { clientId: string; campaign
   if (status.kind === 'thanks') {
     const { receipt } = status;
     return (
-      <div className="rounded-2xl border border-hl-border bg-white p-8 text-center shadow-sm">
-        <p className="text-4xl" aria-hidden>
+      <div className="thanks-card relative overflow-hidden rounded-3xl border border-hl-border bg-white p-8 text-center shadow-xl shadow-hl-teal/10">
+        <span className="thanks-burst" aria-hidden>
+          {['♥', '🐾', '♥', '★', '♥', '🐾', '♥', '★'].map((glyph, i) => (
+            <i key={i} style={{ '--i': i } as CSSProperties}>
+              {glyph}
+            </i>
+          ))}
+        </span>
+        <p className="thanks-paw mx-auto grid size-16 place-items-center rounded-full bg-hl-teal/10 text-4xl" aria-hidden>
           🐾
         </p>
         <h2 className="mt-3 text-2xl font-semibold text-hl-ink">Thank you, {receipt.donor.split(' ')[0]}!</h2>
@@ -152,8 +159,10 @@ export function DonateForm({ clientId, campaigns }: { clientId: string; campaign
 
   const busy = status.kind === 'loading' || status.kind === 'processing';
   return (
-    <div className="rounded-2xl border border-hl-border bg-white p-6 shadow-sm sm:p-8">
-      <fieldset>
+    <div className="rounded-3xl border border-hl-border bg-white p-6 shadow-xl shadow-hl-teal/10 sm:p-8">
+      <h2 className="text-2xl font-bold text-hl-ink">Your gift</h2>
+      <p className="mt-1 text-sm text-hl-muted">One-time, through PayPal. A receipt comes straight back.</p>
+      <fieldset className="mt-6">
         <legend className="text-sm font-semibold text-hl-ink">Choose an amount</legend>
         <div className="mt-3 grid grid-cols-4 gap-2">
           {PRESETS.map((preset) => (
@@ -165,7 +174,7 @@ export function DonateForm({ clientId, campaigns }: { clientId: string; campaign
                 setCustom('');
                 setAmount(preset);
               }}
-              className="rounded-xl border border-hl-border py-3 font-semibold text-hl-ink aria-pressed:border-hl-teal aria-pressed:bg-hl-teal aria-pressed:text-white"
+              className="rounded-xl border border-hl-border py-3 font-semibold text-hl-ink transition hover:-translate-y-0.5 hover:border-hl-teal aria-pressed:border-hl-teal aria-pressed:bg-hl-teal aria-pressed:text-white aria-pressed:shadow-md aria-pressed:shadow-hl-teal/30"
             >
               ${preset}
             </button>
