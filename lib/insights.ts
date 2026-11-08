@@ -133,6 +133,21 @@ export function overduePledges(data: DashboardData): OverduePledge[] {
     .sort((a, b) => b.outstanding - a.outstanding);
 }
 
+export type DatedGift = { donor: string; amount: number; program: string | null; date: string };
+
+/** Gifts paid after `day` (YYYY-MM-DD), newest first. A gift refunded in full doesn't count. */
+export function giftsAfter(data: Pick<DashboardData, 'customers' | 'invoices' | 'invoicePayments'>, day: string): DatedGift[] {
+  const names = new Map(data.customers.map((donor) => [donor.id, donor.name]));
+  const history = giftsByDonor(data);
+  const gifts: DatedGift[] = [];
+  for (const [donorId, donorGifts] of history) {
+    for (const gift of donorGifts) {
+      if (gift.date.slice(0, 10) > day) gifts.push({ donor: names.get(donorId) ?? 'A donor', amount: gift.amount, program: gift.program, date: gift.date });
+    }
+  }
+  return gifts.sort((a, b) => b.date.localeCompare(a.date));
+}
+
 export type NewGift = { id: string; donor: string; amount: number; program: string | null };
 
 /** Gifts in `data` whose payment id isn't in `known`: what has come in since the last read. */

@@ -98,3 +98,15 @@ body {
 .gift-arrived {
   animation: gift-arrive 500ms ease-out;
 }
+
+/* A first visit: the director's button breathes until it is used. */
+@media (prefers-reduced-motion: no-preference) {
+  .ask-hint {
+    animation: ask-hint 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes ask-hint {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(15 118 110 / 0.45); }
+  50% { box-shadow: 0 0 0 8px rgb(15 118 110 / 0); }
+}

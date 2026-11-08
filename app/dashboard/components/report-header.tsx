@@ -21,6 +21,8 @@ export function ReportHeader({
   onDiscard,
   onEditingChange,
   onAsk,
+  firstVisit,
+  news,
 }: {
   reportName: string;
   pageTitle?: string;
@@ -36,6 +38,10 @@ export function ReportHeader({
   onEditingChange: (editing: boolean) => void;
   /** Opens the AI development director; omitted when no model is configured. */
   onAsk?: () => void;
+  /** A first visit: point at the director. */
+  firstVisit?: boolean;
+  /** What came in since this visitor's last visit, if anything. */
+  news?: string | null;
 }) {
   return (
     <div className="flex flex-wrap items-start gap-x-6 gap-y-3 border-b border-pp-border bg-white px-8 py-5">
@@ -43,6 +49,18 @@ export function ReportHeader({
         <p className="truncate text-sm font-semibold text-pp-muted">{reportName}</p>
         <h1 className="truncate text-[28px] font-semibold leading-tight text-pp-navy">{pageTitle}</h1>
         <DataFreshness asOf={asOf} />
+        {news && (
+          <p className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full bg-pp-highlight px-3 py-1 text-sm text-pp-navy">
+            <SparkleIcon className="size-4 shrink-0 text-pp-blue" />
+            <span className="truncate" title={news}>{news}</span>
+          </p>
+        )}
+        {!news && firstVisit && onAsk && !editing && (
+          <p className="mt-2 text-sm text-pp-muted">
+            New here? Click <span className="font-semibold text-pp-navy">Ask your director</span> and pick a suggestion: it reads the
+            PayPal data and does the follow-up.
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-2">
         {editing && pageIsEmpty && (
@@ -74,7 +92,7 @@ export function ReportHeader({
         ) : (
           <>
             {onAsk && (
-              <Button variant="primary" size="sm" onClick={onAsk}>
+              <Button variant="primary" size="sm" onClick={onAsk} className={firstVisit ? 'ask-hint' : undefined}>
                 <SparkleIcon className="size-4" /> Ask your director
               </Button>
             )}

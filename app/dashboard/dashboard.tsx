@@ -50,6 +50,7 @@ import { ReportsSidebar } from './components/sidebar';
 import { DashboardSkeleton } from './components/skeleton';
 import * as reportState from './report-state';
 import { buildAi } from './studio/ai';
+import { readVisit } from './visit';
 import { buildStudioData, hasData } from './studio/data';
 import { toolDisplay } from './studio/tool-display';
 import { agStudioPayPalTheme } from './studio/theme';
@@ -154,6 +155,8 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
   const { requestApproval, approvalDialog } = useApprovals();
   // A gift made anywhere reaches this page within seconds, and the agent's tools read the latest data.
   const { arrival, dismissArrival } = useLiveGifts(data);
+  // Read once per page load: a first visit, or what came in since the last one.
+  const [visit] = useState(() => readVisit(data));
   const [latestData] = useState(() => latestValue(data));
   useEffect(() => latestData.set(data), [latestData, data]);
   // `ai` is read once, when Studio is created.
@@ -196,8 +199,10 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
   // Studio creates the Compose and Data panels on entering edit mode, so they can only be tucked
   // away once it is there.
   const askingDirector = useRef(false);
+  const [askedOnce, setAskedOnce] = useState(false);
   const askDirector = () => {
     askingDirector.current = true;
+    setAskedOnce(true);
     changeMode('edit');
   };
   useEffect(() => {
@@ -340,6 +345,8 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
           next ? changeMode('edit') : guard(() => changeMode('view'))
         }
         onAsk={ai ? askDirector : undefined}
+        firstVisit={visit.first && !askedOnce}
+        news={visit.news}
       />
 
       <div className="min-h-0 flex-1">
