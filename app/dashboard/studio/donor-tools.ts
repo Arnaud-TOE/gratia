@@ -1,13 +1,17 @@
 // The development director's own tools, on top of Studio's. The read tools answer from the
 // PayPal data already on the dashboard; the one write tool sends a pledge reminder through PayPal
-// Invoicing (app/api/pledges), and only after the user approved the exact message.
+// Invoicing (app/api/pledges), and only after the user approved the exact message. Studio leaves
+// pages to the host, so opening a new page is a tool here too.
 
-import type { AgAiTool, AgStudioApi } from 'ag-studio';
+import type { AgAiTool, AgPageState, AgStudioApi } from 'ag-studio';
 import type { DashboardData } from '@/lib/dashboard-data';
 import { donorsAtRisk, overduePledges } from '@/lib/insights';
 import type { RequestApproval } from '../components/approval-dialog';
 
-export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, requestApproval: RequestApproval): AgAiTool[] {
+/** Adds an empty page to the open report, names it and opens it; returns its id. */
+export type OpenPage = (title: string) => string;
+
+export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, requestApproval: RequestApproval, openPage: OpenPage): AgAiTool[] {
   const findDonorsAtRisk = api.defineAiTool({
     name: 'find_donors_at_risk',
     description:
@@ -77,5 +81,70 @@ export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, 
     },
   });
 
-  return [findDonorsAtRisk, listOverduePledges, sendPledgeReminder];
+  const openNewPage = api.defineAiTool({
+    name: 'open_new_page',
+    description:
+      'Adds a new, empty page to the report, gives it a name in the sidebar and opens it. Widgets always go on the page ' +
+      'that is open, so call this before asking the Lead agent to build a new page, and only then delegate.',
+    params: (s) =>
+      s.object({
+        title: s.string({ description: 'The page name shown in the sidebar, under 30 characters, e.g. "Board summary".' }),
+      }),
+    execute: ({ title }, ctx) => {
+      const name = title.trim().slice(0, 40) || 'New page';
+      const pageId = openPage(name);
+      return ctx.success(`Opened a new empty page, "${name}". Ask the Lead agent to add the widgets to the current page.`, { pageId, title: name });
+    },
+  });
+
+  // Studio's agents tend to count the pledges in a table instead of listing them, so this one is built here,
+  // with the same columns as the Pledges page.
+  const addOverduePledgesTable = api.defineAiTool({
+    name: 'add_overdue_pledges_table',
+    description:
+      'Adds a table of the overdue business pledges to the page that is open, below what is already there: one row per ' +
+      'pledge with its number, organization, due date, days overdue and outstanding amount, most overdue first.',
+    params: (s) =>
+      s.object({
+        title: s.string({ description: 'The table title (default "Overdue pledges, most overdue first").' }).optional(),
+      }),
+    execute: ({ title }, ctx) => {
+      const state = api.getState();
+      const page = state.pages.find((candidate) => candidate.id === state.selectedPageId);
+      if (!page) return ctx.error('No page is open.');
+      const id = `overdue-pledges-${Date.now().toString(36)}`;
+      const bottom = Math.max(0, ...Object.values(page.widgetLayout ?? {}).map((at) => (at?.yTrack ?? 0) + (at?.ySpan ?? 0)));
+      const widget = {
+        type: 'grid',
+        dataMapping: {
+          cols: [
+            { id: 'invoices.number' },
+            { id: 'customers.company' },
+            { id: 'invoices.dueDate' },
+            { id: 'invoices.daysOverdue' },
+            { id: 'invoices.outstanding', aggregation: 'sum' },
+          ],
+        },
+        sort: [{ field: { id: 'invoices.daysOverdue' }, direction: 'desc' }],
+        format: { title: { enabled: true, text: title?.trim() || 'Overdue pledges, most overdue first' } },
+      } as unknown as NonNullable<AgPageState['widgets']>[string];
+      const onlyOverdue = [{ field: { id: 'invoices.overdueAmount' }, model: { operator: 'greaterThan', value: 0 } }];
+      api.setState({
+        ...state,
+        pages: state.pages.map((candidate) =>
+          candidate.id !== page.id
+            ? candidate
+            : {
+                ...candidate,
+                widgets: { ...candidate.widgets, [id]: widget },
+                widgetLayout: { ...candidate.widgetLayout, [id]: { xTrack: 0, yTrack: bottom, xSpan: 24, ySpan: 14 } },
+                filter: { ...candidate.filter, widget: { ...candidate.filter?.widget, [id]: onlyOverdue } } as AgPageState['filter'],
+              },
+        ),
+      });
+      return ctx.success('Added the overdue pledges table, one row per pledge, to the open page.', { widgetId: id });
+    },
+  });
+
+  return [findDonorsAtRisk, listOverduePledges, sendPledgeReminder, openNewPage, addOverduePledgesTable];
 }

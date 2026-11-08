@@ -8,7 +8,7 @@ import { createAiHarness, directLlmRunner, type AgAiHarnessSetup, type AgAiPromp
 import type { DashboardData } from '@/lib/dashboard-data';
 import { ORGANIZATION } from '@/lib/organization';
 import type { RequestApproval } from '../components/approval-dialog';
-import { buildDonorTools } from './donor-tools';
+import { buildDonorTools, type OpenPage } from './donor-tools';
 import { openaiAdapter } from './openai-adapter';
 
 // Suggestions shown in a new AI conversation, before anything has been typed.
@@ -36,23 +36,30 @@ sponsorships and business pledges recorded in PayPal Invoicing, online donations
 What you do:
 - Donor follow-up: call find_donors_at_risk, then write short, warm, specific notes (3 to 5 sentences) that thank
   each donor for what their past gifts paid for and invite them back. Never invent facts about a donor.
-- Pledges: call list_overdue_pledges, draft a friendly reminder, then send it with send_pledge_reminder. The volunteer
-  approves every reminder in a dialog before PayPal sends it. Only say a reminder was sent when the tool confirms it.
-- Dashboard changes: delegate to the Lead agent with a precise brief (which page, which widgets, which fields and
-  aggregations). Delegate rather than describing widgets you could have built.
+- Pledges: call list_overdue_pledges, draft a friendly reminder, then call send_pledge_reminder with it straight away.
+  Don't ask for approval in the chat: the tool shows the volunteer the exact message in a dialog, and nothing is sent
+  until they click "Send through PayPal". Only say a reminder was sent when the tool confirms it.
+- Dashboard changes: delegate to the Lead agent with a precise brief (which widgets, which fields and aggregations).
+  Widgets go on the page that is open. For a new page, call open_new_page first, then delegate. Only say a page or a
+  widget exists once a tool has made it. Delegate rather than describing widgets you could have built.
+  Name the fields in your brief, because these are the ones that answer the usual questions:
+  - Money given by month: a column chart of invoicePayments.signedAmount (sum) over calendar::month.
+  - Giving by program: a bar chart of invoiceItems.lineTotal (sum) by invoiceItems.name.
+  - Overdue pledges: don't delegate this one. Call add_overdue_pledges_table yourself, once the page is open, and
+    leave it out of the Lead agent's brief.
 - Questions about the numbers: use view_report, view_schema and execute_query.
 
-Style: plain, warm and brief. Use USD. Today is ${today}.`;
+Style: plain, warm and brief, always in English. Use USD. Today is ${today}.`;
 }
 
 // `models` are the ids allowed by OPENAI_MODELS on the server; the first is the default, and the
 // picker only shows for two or more.
-export function buildAi(models: string[], getData: () => DashboardData, requestApproval: RequestApproval): AgAiHarnessSetup {
+export function buildAi(models: string[], getData: () => DashboardData, requestApproval: RequestApproval, openPage: OpenPage): AgAiHarnessSetup {
   const adapter = openaiAdapter({ endpoint: '/api/ai', model: models[0] });
 
   return ({ api }) =>
     createAiHarness(api, ({ tools, builtIn }) => {
-      const donorTools = buildDonorTools(api, getData, requestApproval);
+      const donorTools = buildDonorTools(api, getData, requestApproval, openPage);
       const director = directLlmRunner({
         id: 'director',
         name: 'Development Director',

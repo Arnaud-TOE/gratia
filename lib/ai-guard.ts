@@ -6,10 +6,11 @@
 const WINDOW_MS = 10 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
 
-// The demo runs on a small prepaid budget. A full tour of the director (the three suggestions and a
-// board report) takes about 30 calls: a visitor can do that in ten minutes, and the day allows about four.
-const CALLS_PER_VISITOR = Number(process.env.AI_CALLS_PER_VISITOR) || 60;
-const CALLS_PER_DAY = Number(process.env.AI_CALLS_PER_DAY) || 120;
+// The demo runs on a small prepaid budget. Measured with the real model: a full tour of the director (the
+// three suggestions) takes about 30 calls, most of them for the board report, at about $0.004 each, $0.12 in
+// all. A visitor can do that a few times in ten minutes, and the day allows six tours: under $0.80 at most.
+const CALLS_PER_VISITOR = Number(process.env.AI_CALLS_PER_VISITOR) || 120;
+const CALLS_PER_DAY = Number(process.env.AI_CALLS_PER_DAY) || 200;
 
 type Verdict = { allowed: true } | { allowed: false; message: string };
 

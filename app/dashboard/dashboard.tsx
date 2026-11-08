@@ -157,9 +157,11 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
   const [latestData] = useState(() => latestValue(data));
   useEffect(() => latestData.set(data), [latestData, data]);
   // `ai` is read once, when Studio is created.
+  // The director's open_new_page tool is built once, with Studio; it reaches the current handlers here.
+  const [openPage] = useState(() => latestValue<(title: string) => string>(() => ''));
   const ai = useMemo(
-    () => (aiModels?.length ? buildAi(aiModels, latestData.get, requestApproval) : undefined),
-    [aiModels, latestData, requestApproval],
+    () => (aiModels?.length ? buildAi(aiModels, latestData.get, requestApproval, (title) => openPage.get()(title)) : undefined),
+    [aiModels, latestData, requestApproval, openPage],
   );
 
   // --- Driving Studio ---------------------------------------------------------------
@@ -284,6 +286,14 @@ function ReportsDashboard({ data, licenseKey, aiModels }: DashboardProps) {
       ...report,
       pageTitles: { ...report.pageTitles, [id]: title },
     }));
+
+  useEffect(() => {
+    openPage.set((title) => {
+      const id = addPage();
+      renamePage(id, title);
+      return id;
+    });
+  });
 
   const editing = mode === 'edit';
   const pages = pagesFor({ pageTitles: saved.pageTitles, state });
