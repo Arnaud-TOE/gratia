@@ -15,7 +15,7 @@ shelter, **Harbor Lane Animal Rescue**.
 | | |
 |---|---|
 | Live demo | [gratia-peach.vercel.app](https://gratia-peach.vercel.app) |
-| Demo video | _added at submission_ |
+| Demo video | [Watch on YouTube](https://youtu.be/NrOm-yoPO7Y) |
 | Donation page | [gratia-peach.vercel.app/donate](https://gratia-peach.vercel.app/donate) |
 | Sandbox buyer login | in the Devpost testing instructions |
 
