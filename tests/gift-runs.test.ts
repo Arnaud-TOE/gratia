@@ -19,13 +19,21 @@ describe('groupRuns', () => {
     ]);
   });
 
+  it('keeps the newest gift on a line of its own, so a $50 gift never reads as $75', () => {
+    const lines = groupRuns([gift('new', 'John Doe', '2026-11-09', 50), gift('j2', 'John Doe', '2026-11-09', 25), gift('j1', 'John Doe', '2026-11-08', 25)]);
+    expect(lines.map((line) => [line.key, line.count, line.amount])).toEqual([
+      ['new', 1, 50],
+      ['j2', 2, 50],
+    ]);
+  });
+
   it("doesn't join a donor's gifts that someone else's came between", () => {
     const lines = groupRuns([gift('1', 'Maya', '2026-11-08', 10), gift('2', 'Omar', '2026-11-08', 10), gift('3', 'Maya', '2026-11-07', 10)]);
     expect(lines.map((line) => line.count)).toEqual([1, 1, 1]);
   });
 
   it('drops the program when the gifts went to different ones', () => {
-    const [line] = groupRuns([gift('1', 'Maya', '2026-11-08', 10, 'Medical Fund'), gift('2', 'Maya', '2026-11-07', 15, 'Sponsor a Pet')]);
+    const [, line] = groupRuns([gift('0', 'Omar', '2026-11-09', 5), gift('1', 'Maya', '2026-11-08', 10, 'Medical Fund'), gift('2', 'Maya', '2026-11-07', 15, 'Sponsor a Pet')]);
     expect(line).toMatchObject({ count: 2, amount: 25, program: null });
   });
 });

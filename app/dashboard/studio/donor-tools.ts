@@ -128,6 +128,8 @@ export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, 
         format: { title: { enabled: true, text: title?.trim() || 'Overdue pledges, most overdue first' } },
       } as unknown as NonNullable<AgPageState['widgets']>[string];
       const onlyOverdue = [{ field: { id: 'invoices.overdueAmount' }, model: { operator: 'greaterThan', value: 0 } }];
+      // Room for every row and the total. A pixel short, the grid adds a scrollbar that cuts off the amounts' last digit.
+      const ySpan = 6 + 3 * Math.max(3, overduePledges(getData()).length);
       api.setState({
         ...state,
         pages: state.pages.map((candidate) =>
@@ -136,7 +138,7 @@ export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, 
             : {
                 ...candidate,
                 widgets: { ...candidate.widgets, [id]: widget },
-                widgetLayout: { ...candidate.widgetLayout, [id]: { xTrack: 0, yTrack: bottom, xSpan: 24, ySpan: 14 } },
+                widgetLayout: { ...candidate.widgetLayout, [id]: { xTrack: 0, yTrack: bottom, xSpan: 24, ySpan } },
                 filter: { ...candidate.filter, widget: { ...candidate.filter?.widget, [id]: onlyOverdue } } as AgPageState['filter'],
               },
         ),

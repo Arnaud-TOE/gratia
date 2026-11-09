@@ -4,11 +4,14 @@
 export type FeedGift = { key: string; donor: string; day: string; amount: number; program: string | null };
 export type FeedLine = FeedGift & { count: number };
 
-/** Joins consecutive gifts from the same donor, newest first. A line keeps its newest gift's key and day. */
+/**
+ * Joins consecutive gifts from the same donor, newest first. A line keeps its newest gift's key and day.
+ * The newest gift of all keeps a line to itself: the top of the feed is exactly the gift that just came in.
+ */
 export function groupRuns(gifts: readonly FeedGift[]): FeedLine[] {
   const lines: FeedLine[] = [];
   for (const gift of gifts) {
-    const last = lines.at(-1);
+    const last = lines.length > 1 ? lines.at(-1) : undefined;
     if (last && last.donor === gift.donor) {
       last.count += 1;
       last.amount = Math.round((last.amount + gift.amount) * 100) / 100;
