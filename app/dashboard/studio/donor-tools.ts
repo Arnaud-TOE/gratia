@@ -103,7 +103,7 @@ export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, 
     name: 'add_overdue_pledges_table',
     description:
       'Adds a table of the overdue business pledges to the page that is open, below what is already there: one row per ' +
-      'pledge with its number, organization, due date, days overdue and outstanding amount, most overdue first.',
+      'pledge with its organization, due date, days overdue and outstanding amount, most overdue first.',
     params: (s) =>
       s.object({
         title: s.string({ description: 'The table title (default "Overdue pledges, most overdue first").' }).optional(),
@@ -118,7 +118,6 @@ export function buildDonorTools(api: AgStudioApi, getData: () => DashboardData, 
         type: 'grid',
         dataMapping: {
           cols: [
-            { id: 'invoices.number' },
             { id: 'customers.company' },
             { id: 'invoices.dueDate' },
             { id: 'invoices.daysOverdue' },
