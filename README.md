@@ -19,7 +19,7 @@ shelter, **Harbor Lane Animal Rescue**.
 | Donation page | [gratia-peach.vercel.app/donate](https://gratia-peach.vercel.app/donate) |
 | Sandbox buyer login | in the Devpost testing instructions |
 
-![The Giving page: KPIs, the live gift feed and the loyalty heatmap](docs/dashboard.png)
+![The dashboard: the director has drafted a personal note for each donor at risk, beside the live gift feed and the loyalty heatmap](docs/dashboard.png)
 
 ## TL;DR for judges
 
@@ -59,6 +59,7 @@ shelter, **Harbor Lane Animal Rescue**.
 - **It acts, not just reports.** Reminders go out through PayPal Invoicing, and gifts are captured through Checkout, with a human approving every outbound message.
 - **A custom agent that works with AG Studio's own team** of agents, instead of a single chatbot over a chart.
 - **Four widgets AG Studio doesn't ship**, built on its widget API, so filters and cross-filters apply and the agents can place them: **campaign goals** (one progress bar per campaign, against its goal), the **gift feed**, the **loyalty heatmap** (who keeps coming back, month by month, and who has gone quiet) and the **donor wall**. Like the built-in charts, they use Studio's highlight mode: a selection elsewhere fades what it leaves out instead of hiding it.
+- **A command palette.** Ctrl K (⌘K on a Mac) from anywhere in the dashboard: the director's suggestions, every page and report, the donation page. It presses the same prompt starters as the chat, so it runs exactly what a click would.
 - **A live dashboard on a read API.** Each online gift is mirrored as a PayPal invoice receipt, so an open dashboard picks it up within seconds, instead of waiting hours for Transaction Search.
 
 ## Architecture

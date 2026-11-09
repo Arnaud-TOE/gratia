@@ -98,7 +98,7 @@ function PhoneNotice() {
       </div>
       <h1 className="text-balance text-3xl font-extrabold tracking-tight">The team dashboard needs a bigger screen</h1>
       <p className="mt-3 max-w-sm text-white/65">Open this page on a laptop to see the report and talk to the director. On a phone, try what donors see.</p>
-      <Image src="/app.png" width={2880} height={1800} sizes="100vw" alt="The Giving page of the team dashboard, with the latest gifts and who keeps coming back" className="mt-6 w-full max-w-md rounded-xl ring-1 ring-white/15 shadow-2xl shadow-teal-500/20" />
+      <Image src="/app.png" width={2560} height={1440} sizes="100vw" alt="The Giving page of the team dashboard, with the latest gifts and who keeps coming back" className="mt-6 w-full max-w-md rounded-xl ring-1 ring-white/15 shadow-2xl shadow-teal-500/20" />
       <Link href="/donate" className="btn-glow mt-7 rounded-full px-6 py-3 font-bold">
         See the donation page
       </Link>
