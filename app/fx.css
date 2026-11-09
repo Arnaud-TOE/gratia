@@ -311,24 +311,27 @@
 
 /* ---------- The command palette (components/command-palette.tsx) ---------- */
 
-.palette-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  background: rgb(255 255 255 / 0.06);
-  padding: 0.4rem 0.5rem 0.4rem 0.85rem;
-  font-size: 0.85rem;
-  color: rgb(255 255 255 / 0.65);
-  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
-}
-
-.palette-trigger:hover {
-  background: rgb(255 255 255 / 0.1);
-  border-color: rgb(255 255 255 / 0.22);
-  color: #fff;
+/* In the components layer, so utilities such as hidden and md:inline-flex still win. */
+@layer components {
+  .palette-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.06);
+    padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.65);
+    transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  }
+  
+  .palette-trigger:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.22);
+    color: #fff;
+  }
 }
 
 .palette-trigger kbd,
