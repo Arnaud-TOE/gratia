@@ -13,7 +13,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import {
   AgStudioAiModule,
   enableStudioDevValidations,
@@ -86,13 +86,20 @@ const STUDIO_TEXT = {
 // The report is laid out for a laptop or larger; a phone gets a way forward instead of a squeezed grid.
 // It must not render the report as well: a phone browser widens the page to fit what is too wide for it,
 // and everything else, this notice included, ends up off the screen.
+const PHONE_NIGHT = { '--night': '#04191a', '--glow-a': '#14b8a6', '--glow-b': '#f59e0b', '--glow-c': '#34d399' } as CSSProperties;
+
 function PhoneNotice() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center bg-pp-canvas p-8 text-center font-paypal">
-      <h1 className="text-2xl font-bold text-pp-navy">The team dashboard needs a bigger screen</h1>
-      <p className="mt-3 max-w-sm text-pp-muted">Open this page on a laptop to see the report and talk to the director. On a phone, try what donors see.</p>
-      <Image src="/app.png" width={2880} height={1800} sizes="100vw" alt="The Giving page of the team dashboard, with the latest gifts and who keeps coming back" className="mt-6 w-full max-w-md rounded-xl border border-pp-border" />
-      <Link href="/donate" className="mt-6 rounded-full bg-pp-blue px-6 py-3 font-semibold text-white">
+    <main className="night grain flex min-h-dvh flex-col items-center justify-center overflow-hidden p-8 text-center font-paypal" style={PHONE_NIGHT}>
+      <div className="aurora" aria-hidden>
+        <i />
+        <i />
+        <i />
+      </div>
+      <h1 className="text-balance text-3xl font-extrabold tracking-tight">The team dashboard needs a bigger screen</h1>
+      <p className="mt-3 max-w-sm text-white/65">Open this page on a laptop to see the report and talk to the director. On a phone, try what donors see.</p>
+      <Image src="/app.png" width={2880} height={1800} sizes="100vw" alt="The Giving page of the team dashboard, with the latest gifts and who keeps coming back" className="mt-6 w-full max-w-md rounded-xl ring-1 ring-white/15 shadow-2xl shadow-teal-500/20" />
+      <Link href="/donate" className="btn-glow mt-7 rounded-full px-6 py-3 font-bold">
         See the donation page
       </Link>
     </main>
